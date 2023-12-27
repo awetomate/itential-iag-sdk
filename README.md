@@ -1,6 +1,10 @@
 # itential-iag-sdk
 Lightweight SDK to simplify interacting with the Itential automation gateway API.
 
+This is an beta release. Please ensure the package works as expected in your environment before using it in production as there may still be bugs.
+
+This package was written for Itential Automation Gateway 2023.1. 
+
 ## Getting Started
 Make sure you have a supported version of Python installed and then create and activate a virtual environment:
 ```bash
