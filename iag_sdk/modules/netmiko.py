@@ -22,7 +22,7 @@ class Netmiko(ClientBase):
     ) -> None:
         super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
-    def execute_netmiko_send_command_legacy(
+    def execute_send_command_legacy(
         self,
         host: str,
         commands: List[str],
@@ -56,7 +56,7 @@ class Netmiko(ClientBase):
             "/netmiko/send_command", method="post", jsonbody=parameters
         )
 
-    def execute_netmiko_send_command_native(
+    def execute_send_command_native(
         self,
         host: str,
         command_string: str,
