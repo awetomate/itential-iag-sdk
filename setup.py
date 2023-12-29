@@ -4,8 +4,8 @@ import setuptools
 
 setuptools.setup(
     name="iag_sdk",
-    version="2023.12b2",
-    description="Lightweight SDK to simplify interacting with the Itential automation gateway API.",
+    version="2023.12b3",
+    description="Lightweight SDK to simplify the process of interacting with the Itential automation gateway API.",
     long_description=pathlib.Path("README.md").read_text(),
     long_description_content_type="text/markdown",
     url="https://github.com/awetomate/itential-iag-sdk",

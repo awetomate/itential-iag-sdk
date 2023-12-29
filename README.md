@@ -1,5 +1,5 @@
 # itential-iag-sdk
-Lightweight SDK to simplify interacting with the Itential automation gateway API.
+Lightweight SDK to simplify the process of interacting with the Itential automation gateway API.
 
 This is an beta release. Please ensure the package works as expected in your environment before using it in production as there may still be bugs.
 
