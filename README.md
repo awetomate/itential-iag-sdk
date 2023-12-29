@@ -29,8 +29,8 @@ python -m pip install -e .
 from iag_sdk import Iag
 
 username = "admin@itential"
-password = "yourpass"
-host = "yourhost"
+password = "your_password"
+host = "your_server"
 
 iag = Iag(host=host, username=username, password=password, verify=False)
 
@@ -87,10 +87,20 @@ iag.collections.refresh()
 Work with Netmiko:
 ```python
 # IAG native
-iag.netmiko.execute_send_command_native(host="device1", command_string="show version")
+iag.netmiko.execute_send_command_native(
+    host="device1", 
+    command_string="show version"
+)
 
 # legacy
-iag.netmiko.execute_send_command_legacy(host="device1", commands=["show version"], device_type="cisco_ftd", username="youruser", password="yourpassword", port=22)
+iag.netmiko.execute_send_command_legacy(
+    host="device1", 
+    commands=["show version"], 
+    device_type="cisco_ftd", 
+    username="your_username", 
+    password="your_password", 
+    port=22
+)
 ```
 
 ### The all-purpose 'query' method

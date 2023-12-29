@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class System(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def get_audit_log(self, audit_id: str) -> Dict:
         """
@@ -27,7 +28,7 @@ class System(ClientBase):
 
         :param audit_id: Audit id of execution.
         """
-        return self.query(f"/exec_history/{audit_id}")
+        return self._make_request(f"/exec_history/{audit_id}")
 
     def get_audit_logs(
         self, offset: int = 0, limit: int = 50, order: str = "descending"
@@ -39,7 +40,7 @@ class System(ClientBase):
         :param limit: Optional. The number of items to return (default 50).
         :param order: Optional. Sort indication. Available values : 'ascending', 'descending' (default).
         """
-        return self.query(
+        return self._make_request(
             "/audit", params={"offset": offset, "limit": limit, "order": order}
         )
 
@@ -47,16 +48,16 @@ class System(ClientBase):
         """
         Determine if AG server is up and running.
         """
-        return self.query("/poll")
+        return self._make_request("/poll")
 
     def get_openapi_spec(self) -> Dict:
         """
         Get the current OpenAPI spec from the running instance of IAG
         """
-        return self.query("/openapi_spec")
+        return self._make_request("/openapi_spec")
 
     def get_status(self) -> Dict:
         """
         Get the AG server status (version, ansible version, etc).
         """
-        return self.query(f"/status")
+        return self._make_request(f"/status")

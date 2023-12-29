@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class Nornir(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def delete_schema(self, name: str) -> Dict:
         """
@@ -27,7 +28,7 @@ class Nornir(ClientBase):
 
         :param name: Name of the nornir module.
         """
-        return self.query(f"/nornir/{name}/schema", method="delete")
+        return self._make_request(f"/nornir/{name}/schema", method="delete")
 
     def execute(self, name: str, parameters: Dict) -> Dict:
         """
@@ -37,7 +38,9 @@ class Nornir(ClientBase):
         :param name: Name of nornir module to execute.
         :param parameters: Module Execution Parameters.
         """
-        return self.query(f"/nornir/{name}/execute", method="post", jsonbody=parameters)
+        return self._make_request(
+            f"/nornir/{name}/execute", method="post", jsonbody=parameters
+        )
 
     def get(self, name: str) -> Dict:
         """
@@ -45,7 +48,7 @@ class Nornir(ClientBase):
 
         :param name: Name of nornir module to retrieve.
         """
-        return self.query(f"/nornir/{name}")
+        return self._make_request(f"/nornir/{name}")
 
     def get_history(
         self, name: str, offset: int = 0, limit: int = 10, order: str = "descending"
@@ -59,7 +62,7 @@ class Nornir(ClientBase):
         :param limit: Optional. The number of items to return (default 10).
         :param order: Optional. Sort indication. Available values : ascending, descending (default).
         """
-        return self.query(
+        return self._make_request(
             f"/nornir/{name}/history",
             params={"offset": offset, "limit": limit, "order": order},
         )
@@ -70,7 +73,7 @@ class Nornir(ClientBase):
 
         :param name: Name of nornir module.
         """
-        return self.query(f"/nornir/{name}/schema")
+        return self._make_request(f"/nornir/{name}/schema")
 
     def get_all(
         self,
@@ -89,7 +92,7 @@ class Nornir(ClientBase):
         :param order: Optional. Sort indication. Available values : ascending (default), descending.
         :param detail: Select detail level between 'full' (a lot of data) or 'summary' for each item.
         """
-        return self.query(
+        return self._make_request(
             "/nornir",
             params={
                 "offset": offset,
@@ -104,7 +107,7 @@ class Nornir(ClientBase):
         """
         Perform Nornir module discovery and update internal cache.
         """
-        return self.query("/nornir/refresh", method="post")
+        return self._make_request("/nornir/refresh", method="post")
 
     def update_schema(self, name: str, config_object: Dict) -> Dict:
         """
@@ -114,6 +117,6 @@ class Nornir(ClientBase):
         :param name: Name of nornir module.
         :param config_object: Schema to apply to nornir module identified in path.
         """
-        return self.query(
+        return self._make_request(
             f"/nornir/{name}/schema", method="put", jsonbody=config_object
         )

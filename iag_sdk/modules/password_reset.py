@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class PasswordReset(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def reset(
         self,
@@ -54,7 +55,7 @@ class PasswordReset(ClientBase):
             "security_ques2_ans": security_ques2_ans,
             "username": username,
         }
-        return self.query("/password_reset", method="post", jsonbody=parameters)
+        return self._make_request("/password_reset", method="post", jsonbody=parameters)
 
     def update(
         self,
@@ -86,7 +87,9 @@ class PasswordReset(ClientBase):
             "security_ques2_ans": security_ques2_ans,
             "username": username,
         }
-        return self.query("/password_reset/update", method="post", jsonbody=parameters)
+        return self._make_request(
+            "/password_reset/update", method="post", jsonbody=parameters
+        )
 
     def update_change_flag(self, username: str) -> Dict:
         """
@@ -94,7 +97,9 @@ class PasswordReset(ClientBase):
 
         :param username: Username of account.
         """
-        return self.query(f"/password_reset/update_flag/{username}", method="post")
+        return self._make_request(
+            f"/password_reset/update_flag/{username}", method="post"
+        )
 
     def update_security_questions(
         self,
@@ -120,7 +125,7 @@ class PasswordReset(ClientBase):
             "security_ques2_ans": security_ques2_ans,
             "username": username,
         }
-        return self.query(
+        return self._make_request(
             "/password_reset/update_questions", method="post", jsonbody=parameters
         )
 
@@ -130,6 +135,6 @@ class PasswordReset(ClientBase):
 
         :param username: Username of account.
         """
-        return self.query(
+        return self._make_request(
             f"/password_reset/validate_pass_change/{username}", method="post"
         )

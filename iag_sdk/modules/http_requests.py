@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class HttpRequest(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def execute(self, parameters: Dict) -> Dict:
         """
@@ -27,7 +28,7 @@ class HttpRequest(ClientBase):
 
         :param parameters: Parameters required to send your request. See the Requests library for all other supported parameters: https://docs.python-requests.org/en/latest/api/
         """
-        return self.query(
+        return self._make_request(
             "/http_requests/request/execute", method="post", jsonbody=parameters
         )
 
@@ -41,7 +42,7 @@ class HttpRequest(ClientBase):
         :param limit: Optional. The number of items to return (default 10).
         :param order: Optional. Sort indication. Available values : 'ascending', 'descending' (default).
         """
-        return self.query(
+        return self._make_request(
             "/http_requests/request/history",
             params={"offset": offset, "limit": limit, "order": order},
         )
@@ -50,4 +51,4 @@ class HttpRequest(ClientBase):
         """
         Get the json schema for http_requests' request endpoint.
         """
-        return self.query("/http_requests/request/schema")
+        return self._make_request("/http_requests/request/schema")

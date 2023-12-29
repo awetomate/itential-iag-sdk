@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class Role(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def delete_schema(self, name: str) -> Dict:
         """
@@ -27,7 +28,7 @@ class Role(ClientBase):
 
         :param name: Name of role.
         """
-        return self.query(f"/roles/{name}/schema", method="delete")
+        return self._make_request(f"/roles/{name}/schema", method="delete")
 
     def execute(self, name: str, parameters: Dict) -> Dict:
         """
@@ -37,7 +38,9 @@ class Role(ClientBase):
         :param name: Name of role to be executed.
         :param parameters: Role Execution Parameters.
         """
-        return self.query(f"/roles/{name}/execute", method="post", jsonbody=parameters)
+        return self._make_request(
+            f"/roles/{name}/execute", method="post", jsonbody=parameters
+        )
 
     def get(self, name: str) -> Dict:
         """
@@ -45,7 +48,7 @@ class Role(ClientBase):
 
         :param name: Name of role to retrieve.
         """
-        return self.query(f"/roles/{name}")
+        return self._make_request(f"/roles/{name}")
 
     def get_history(
         self, name: str, offset: int = 0, limit: int = 10, order: str = "descending"
@@ -59,7 +62,7 @@ class Role(ClientBase):
         :param limit: Optional. The number of items to return.
         :param order: Optional. Sort indication. Available values : ascending, descending (default).
         """
-        return self.query(
+        return self._make_request(
             f"/roles/{name}/history",
             params={"offset": offset, "limit": limit, "order": order},
         )
@@ -70,7 +73,7 @@ class Role(ClientBase):
 
         :param name: Name of role to retrieve.
         """
-        return self.query(f"/roles/{name}/schema")
+        return self._make_request(f"/roles/{name}/schema")
 
     def get_all(
         self,
@@ -89,7 +92,7 @@ class Role(ClientBase):
         :param order: Optional. Sort indication. Available values : ascending (default), descending.
         :param detail: Optional. Select detail level between 'full' (a lot of data) or 'summary' (default) for each item.
         """
-        return self.query(
+        return self._make_request(
             "/roles",
             params={
                 "offset": offset,
@@ -104,7 +107,7 @@ class Role(ClientBase):
         """
         Perform Ansible role discovery and update internal cache.
         """
-        return self.query("/roles/refresh", method="post")
+        return self._make_request("/roles/refresh", method="post")
 
     def update_schema(self, name: str, config_object: Dict) -> Dict:
         """
@@ -114,4 +117,6 @@ class Role(ClientBase):
         :param name: Name of role.
         :param config_object: Dictionary containing the updated role schema definition.
         """
-        return self.query(f"/roles/{name}/schema", method="put", jsonbody=config_object)
+        return self._make_request(
+            f"/roles/{name}/schema", method="put", jsonbody=config_object
+        )

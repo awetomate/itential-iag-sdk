@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class Netconf(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def execute_rpc(self, host: str, rpc: str) -> Dict:
         """
@@ -29,7 +30,7 @@ class Netconf(ClientBase):
         :param rpc: Name of RPC operation to be executed on the remote device.
         """
         parameters = {"host": host, "rpc": rpc}
-        return self.query(
+        return self._make_request(
             "/netconf/exec_rpc/execute", method="post", jsonbody=parameters
         )
 
@@ -54,7 +55,7 @@ class Netconf(ClientBase):
             "lock": lock,
             "target_datastore": target_datastore,
         }
-        return self.query(
+        return self._make_request(
             "/netconf/get_config/execute", method="post", jsonbody=parameters
         )
 
@@ -85,7 +86,7 @@ class Netconf(ClientBase):
             "target_datastore": target_datastore,
             "validate": validate,
         }
-        return self.query(
+        return self._make_request(
             "/netconf/set_config/execute", method="post", jsonbody=parameters
         )
 
@@ -105,7 +106,7 @@ class Netconf(ClientBase):
         :param limit: Optional.The number of items to return (default 10).
         :param order: Optional. Sort indication. Available values : 'ascending', 'descending' (default).
         """
-        return self.query(
+        return self._make_request(
             f"/netconf/{netconf_command}/history",
             params={"offset": offset, "limit": limit, "order": order},
         )

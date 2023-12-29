@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class Inventory(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def add_http_requests_device(
         self, config_object: Dict, inventory_name: str = "default"
@@ -30,7 +31,7 @@ class Inventory(ClientBase):
         :param config_object: Device definition
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/http_requests/{inventory_name}/devices",
             method="post",
             jsonbody=config_object,
@@ -45,7 +46,7 @@ class Inventory(ClientBase):
         :param config_object: Device definition
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netconf/{inventory_name}/devices",
             method="post",
             jsonbody=config_object,
@@ -61,7 +62,7 @@ class Inventory(ClientBase):
         :param config_object: Dictionary containing the device definition
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netmiko/{inventory_name}/devices",
             method="post",
             jsonbody=config_object,
@@ -76,7 +77,7 @@ class Inventory(ClientBase):
         :param name: Name of the HTTP requests device.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/http_requests/{inventory_name}/devices/{name}",
             method="delete",
         )
@@ -88,7 +89,7 @@ class Inventory(ClientBase):
         :param name: Name of the netconf device.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netconf/{inventory_name}/devices/{name}", method="delete"
         )
 
@@ -99,7 +100,7 @@ class Inventory(ClientBase):
         :param name: Name of the Netmiko device.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netmiko/{inventory_name}/devices/{name}", method="delete"
         )
 
@@ -112,7 +113,9 @@ class Inventory(ClientBase):
         :param name: Name of the device.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(f"/inventories/http_requests/{inventory_name}/devices/{name}")
+        return self._make_request(
+            f"/inventories/http_requests/{inventory_name}/devices/{name}"
+        )
 
     def get_http_requests_device_group(
         self, group_name: str, inventory_name: str = "default"
@@ -123,7 +126,7 @@ class Inventory(ClientBase):
         :param group_name: Name of group.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/http_requests/{inventory_name}/groups/{group_name}"
         )
 
@@ -136,7 +139,7 @@ class Inventory(ClientBase):
         :param group_name: Name of group.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/http_requests/{inventory_name}/groups/{group_name}/children"
         )
 
@@ -149,7 +152,7 @@ class Inventory(ClientBase):
         :param group_name: Name of group.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/http_requests/{inventory_name}/groups/{group_name}/devices"
         )
 
@@ -170,7 +173,7 @@ class Inventory(ClientBase):
         :param filter: Optional.Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"SW"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/http_requests/{inventory_name}/groups",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -192,7 +195,7 @@ class Inventory(ClientBase):
         :param filter: Optional.Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"SW"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/http_requests/{inventory_name}/devices",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -204,7 +207,9 @@ class Inventory(ClientBase):
         :param name: Name of the device.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(f"/inventories/netconf/{inventory_name}/devices/{name}")
+        return self._make_request(
+            f"/inventories/netconf/{inventory_name}/devices/{name}"
+        )
 
     def get_netconf_device_group(
         self, group_name: str, inventory_name: str = "default"
@@ -215,7 +220,9 @@ class Inventory(ClientBase):
         :param group_name: Name of group.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(f"/inventories/netconf/{inventory_name}/groups/{group_name}")
+        return self._make_request(
+            f"/inventories/netconf/{inventory_name}/groups/{group_name}"
+        )
 
     def get_netconf_device_group_children(
         self, group_name: str, inventory_name: str = "default"
@@ -226,7 +233,7 @@ class Inventory(ClientBase):
         :param group_name: Name of group.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netconf/{inventory_name}/groups/{group_name}/children"
         )
 
@@ -239,7 +246,7 @@ class Inventory(ClientBase):
         :param group_name: Name of group.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netconf/{inventory_name}/groups/{group_name}/devices"
         )
 
@@ -260,7 +267,7 @@ class Inventory(ClientBase):
         :param filter: Optional.Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"SW"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netconf/{inventory_name}/groups",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -282,7 +289,7 @@ class Inventory(ClientBase):
         :param filter: Optional.Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"SW"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netconf/{inventory_name}/devices",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -294,7 +301,9 @@ class Inventory(ClientBase):
         :param name: Name of the device.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(f"/inventories/netmiko/{inventory_name}/devices/{name}")
+        return self._make_request(
+            f"/inventories/netmiko/{inventory_name}/devices/{name}"
+        )
 
     def get_netmiko_device_group(
         self, group_name: str, inventory_name: str = "default"
@@ -305,7 +314,9 @@ class Inventory(ClientBase):
         :param group_name: Name of group.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(f"/inventories/netmiko/{inventory_name}/groups/{group_name}")
+        return self._make_request(
+            f"/inventories/netmiko/{inventory_name}/groups/{group_name}"
+        )
 
     def get_netmiko_device_group_children(
         self, group_name: str, inventory_name: str = "default"
@@ -316,7 +327,7 @@ class Inventory(ClientBase):
         :param group_name: Name of group.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netmiko/{inventory_name}/groups/{group_name}/children"
         )
 
@@ -329,7 +340,7 @@ class Inventory(ClientBase):
         :param group_name: Name of group.
         :param inventory_name: Optional. Name of inventory (default = "default").
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netmiko/{inventory_name}/groups/{group_name}/devices"
         )
 
@@ -350,7 +361,7 @@ class Inventory(ClientBase):
         :param filter: Optional.Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"SW"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netmiko/{inventory_name}/groups",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -372,7 +383,7 @@ class Inventory(ClientBase):
         :param filter: Optional.Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"SW"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netmiko/{inventory_name}/devices",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -393,7 +404,7 @@ class Inventory(ClientBase):
         :param inventory_name: Optional. Name of inventory (default = "default").
         :param method: Optional. Choose between 'put' (default) and 'patch'.
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/http_requests/{inventory_name}/devices/{name}",
             method=method,
             jsonbody=config_object,
@@ -415,7 +426,7 @@ class Inventory(ClientBase):
         :param inventory_name: Optional. Name of inventory (default = "default").
         :param method: Optional. Choose between 'put' (default) and 'patch'.
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netconf/{inventory_name}/devices/{name}",
             method=method,
             jsonbody=config_object,
@@ -437,7 +448,7 @@ class Inventory(ClientBase):
         :param inventory_name: Optional. Name of inventory (default = "default").
         :param method: Choose between 'put' (default) and 'patch'.
         """
-        return self.query(
+        return self._make_request(
             f"/inventories/netmiko/{inventory_name}/devices/{name}",
             method=method,
             jsonbody=config_object,
@@ -447,4 +458,4 @@ class Inventory(ClientBase):
         """
         Perform external inventory discovery and update internal cache.
         """
-        return self.query("/inventory/refresh", method="post")
+        return self._make_request("/inventory/refresh", method="post")

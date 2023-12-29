@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class Secret(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def add(self, path: str, config_object: Dict) -> Dict:
         """
@@ -28,7 +29,7 @@ class Secret(ClientBase):
         :param path: Name of secret path.
         :param config_object: Secret definition {"path": path, "secret_data": {}}
         """
-        return self.query(
+        return self._make_request(
             "/secrets", method="post", params={"path": path}, jsonbody=config_object
         )
 
@@ -38,7 +39,7 @@ class Secret(ClientBase):
 
         :param path: Name of secret path.
         """
-        return self.query("/secrets", method="delete", params={"path": path})
+        return self._make_request("/secrets", method="delete", params={"path": path})
 
     def get(self, path: str) -> Dict:
         """
@@ -46,7 +47,7 @@ class Secret(ClientBase):
 
         :param path: Name of secret path.
         """
-        return self.query("/secrets", params={"path": path})
+        return self._make_request("/secrets", params={"path": path})
 
     def update(self, path: str, config_object: Dict) -> Dict:
         """
@@ -55,6 +56,6 @@ class Secret(ClientBase):
         :param path: Name of secret path.
         :param config_object: Secret data key/value pairs
         """
-        return self.query(
+        return self._make_request(
             "/secrets", method="put", params={"path": path}, jsonbody=config_object
         )

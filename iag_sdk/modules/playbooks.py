@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class Playbook(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def delete_schema(self, name: str) -> Dict:
         """
@@ -27,11 +28,9 @@ class Playbook(ClientBase):
 
         :param name: Name of playbook.
         """
-        return self.query(f"/playbooks/{name}/schema", method="delete")
+        return self._make_request(f"/playbooks/{name}/schema", method="delete")
 
-    def execute(
-        self, name: str, parameters: Dict, dry_run: bool = False
-    ) -> Dict:
+    def execute(self, name: str, parameters: Dict, dry_run: bool = False) -> Dict:
         """
         Execute an Ansible playbook.
         Tip: Use get_playbook_schema() to get the format of the parameters object.
@@ -41,11 +40,11 @@ class Playbook(ClientBase):
         :param dry_run: Optional. Set to True to run playbook in check mode (dry run).
         """
         if dry_run:
-            return self.query(
+            return self._make_request(
                 f"/playbooks/{name}/dry_run", method="post", jsonbody=parameters
             )
         else:
-            return self.query(
+            return self._make_request(
                 f"/playbooks/{name}/execute", method="post", jsonbody=parameters
             )
 
@@ -55,7 +54,7 @@ class Playbook(ClientBase):
 
         :param name: Name of playbook to retrieve.
         """
-        return self.query(f"/playbooks/{name}")
+        return self._make_request(f"/playbooks/{name}")
 
     def get_history(
         self, name: str, offset: int = 0, limit: int = 10, order: str = "descending"
@@ -69,7 +68,7 @@ class Playbook(ClientBase):
         :param limit: Optional. The number of items to return (default 10).
         :param order: Optional. Sort indication. Available values : ascending, descending (default).
         """
-        return self.query(
+        return self._make_request(
             f"/playbooks/{name}/history",
             params={"offset": offset, "limit": limit, "order": order},
         )
@@ -80,7 +79,7 @@ class Playbook(ClientBase):
 
         :param name: Name of playbook to retrieve.
         """
-        return self.query(f"/playbooks/{name}/schema")
+        return self._make_request(f"/playbooks/{name}/schema")
 
     def get_all(
         self,
@@ -99,7 +98,7 @@ class Playbook(ClientBase):
         :param order: Optional. Sort indication. Available values : ascending (default), descending.
         :param detail: Optional. Select detail level between 'full' (a lot of data) or 'summary' for each item.
         """
-        return self.query(
+        return self._make_request(
             "/playbooks",
             params={
                 "offset": offset,
@@ -114,7 +113,7 @@ class Playbook(ClientBase):
         """
         Perform Ansible playbook discovery and update internal cache.
         """
-        return self.query("/playbooks/refresh", method="post")
+        return self._make_request("/playbooks/refresh", method="post")
 
     def update_schema(self, name: str, config_object: Dict) -> Dict:
         """
@@ -124,6 +123,6 @@ class Playbook(ClientBase):
         :param name: Name of playbook.
         :param config_object: Dictionary containing the updated playbook schema definition.
         """
-        return self.query(
+        return self._make_request(
             f"/playbooks/{name}/schema", method="put", jsonbody=config_object
         )

@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class Collection(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def add(self, config_object: Dict) -> Dict:
         """
@@ -27,32 +28,30 @@ class Collection(ClientBase):
 
         :param config_object: Parameters for collection name and Galaxy server authentication.
         """
-        return self.query("/collections/install", method="post", jsonbody=config_object)
+        return self._make_request(
+            "/collections/install", method="post", jsonbody=config_object
+        )
 
-    def delete_module_schema(
-        self, collection_name: str, module_name: str
-    ) -> Dict:
+    def delete_module_schema(self, collection_name: str, module_name: str) -> Dict:
         """
         Remove a schema for a module in the Ansible collection.
 
         :param collection_name: Name of collection.
         :param module_name: Name of module.
         """
-        return self.query(
+        return self._make_request(
             f"/collections/{collection_name}/modules/{module_name}/schema",
             method="delete",
         )
 
-    def delete_role_schema(
-        self, collection_name: str, role_name: str
-    ) -> Dict:
+    def delete_role_schema(self, collection_name: str, role_name: str) -> Dict:
         """
         Remove a schema for a role in the Ansible collection.
 
         :param collection_name: Name of collection.
         :param role_name: Name of role.
         """
-        return self.query(
+        return self._make_request(
             f"/collections/{collection_name}/roles/{role_name}/schema", method="delete"
         )
 
@@ -62,7 +61,7 @@ class Collection(ClientBase):
 
         :param collection_name: Name of collection to retrieve detail for.
         """
-        return self.query(f"/collections/{collection_name}")
+        return self._make_request(f"/collections/{collection_name}")
 
     def get_module(self, collection_name: str, module_name: str) -> Dict:
         """
@@ -71,7 +70,9 @@ class Collection(ClientBase):
         :param collection_name: Name of collection to retrieve detail for.
         :param module_name: Name of module to retrieve detail for.
         """
-        return self.query(f"/collections/{collection_name}/modules/{module_name}")
+        return self._make_request(
+            f"/collections/{collection_name}/modules/{module_name}"
+        )
 
     def get_module_history(
         self,
@@ -91,21 +92,19 @@ class Collection(ClientBase):
         :param limit: Optional. The number of items to return.
         :param order: Optional. Sort indication. Available values : 'ascending', 'descending' (default).
         """
-        return self.query(
+        return self._make_request(
             f"/collections/{collection_name}/modules/{module_name}/history",
             params={"offset": offset, "limit": limit, "order": order},
         )
 
-    def get_module_schema(
-        self, collection_name: str, module_name: str
-    ) -> Dict:
+    def get_module_schema(self, collection_name: str, module_name: str) -> Dict:
         """
         Get the schema for a module in the Ansible collection.
 
         :param collection_name: Name of collection.
         :param module_name: Name of module.
         """
-        return self.query(
+        return self._make_request(
             f"/collections/{collection_name}/modules/{module_name}/schema"
         )
 
@@ -128,7 +127,7 @@ class Collection(ClientBase):
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         :param detail: Optional. Select detail level between 'full' (a lot of data) or 'summary' (default) for each item.
         """
-        return self.query(
+        return self._make_request(
             f"/collections/{collection_name}/modules",
             params={
                 "offset": offset,
@@ -146,7 +145,7 @@ class Collection(ClientBase):
         :param collection_name: Name of collection to retrieve detail for.
         :param role_name: Name of role to retrieve detail for.
         """
-        return self.query(f"/collections/{collection_name}/roles/{role_name}")
+        return self._make_request(f"/collections/{collection_name}/roles/{role_name}")
 
     def get_role_history(
         self,
@@ -166,7 +165,7 @@ class Collection(ClientBase):
         :param limit: Optional. The number of items to return.
         :param order: Optional. Sort indication. Available values : 'ascending', 'descending' (default).
         """
-        return self.query(
+        return self._make_request(
             f"/collections/{collection_name}/roles/{role_name}/history",
             params={"offset": offset, "limit": limit, "order": order},
         )
@@ -178,7 +177,9 @@ class Collection(ClientBase):
         :param collection_name: Name of collection.
         :param role_name: Name of role.
         """
-        return self.query(f"/collections/{collection_name}/roles/{role_name}/schema")
+        return self._make_request(
+            f"/collections/{collection_name}/roles/{role_name}/schema"
+        )
 
     def get_roles(
         self,
@@ -199,7 +200,7 @@ class Collection(ClientBase):
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         :param detail: Optional. Select detail level between 'full' (a lot of data) or 'summary' (default) for each item.
         """
-        return self.query(
+        return self._make_request(
             f"/collections/{collection_name}/roles",
             params={
                 "offset": offset,
@@ -227,7 +228,7 @@ class Collection(ClientBase):
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         :param detail: Optional. Select detail level between 'full' (a lot! of data) or 'summary' (default) for each item.
         """
-        return self.query(
+        return self._make_request(
             "/collections",
             params={
                 "offset": offset,
@@ -242,7 +243,7 @@ class Collection(ClientBase):
         """
         Perform Ansible collection discovery and update internal cache.
         """
-        return self.query("/collections/refresh", method="post")
+        return self._make_request("/collections/refresh", method="post")
 
     def execute_module(
         self, collection_name: str, module_name: str, parameters: Dict
@@ -254,7 +255,7 @@ class Collection(ClientBase):
         :param module_name: Name of module within collection.
         :param parameters: Module Execution Parameters.
         """
-        return self.query(
+        return self._make_request(
             f"/collections/{collection_name}/modules/{module_name}/execute",
             method="post",
             jsonbody=parameters,
@@ -270,7 +271,7 @@ class Collection(ClientBase):
         :param role_name: Name of role within collection.
         :param parameters: Role Execution Parameters.
         """
-        return self.query(
+        return self._make_request(
             f"/collections/{collection_name}/roles/{role_name}/execute",
             method="post",
             jsonbody=parameters,
@@ -287,7 +288,7 @@ class Collection(ClientBase):
         :param module_name: Name of module.
         :param config_object: Schema to apply to module identified in path.
         """
-        return self.query(
+        return self._make_request(
             f"/collections/{collection_name}/modules/{module_name}/schema",
             method="put",
             jsonbody=config_object,
@@ -304,7 +305,7 @@ class Collection(ClientBase):
         :param role_name: Name of role.
         :param config_object: Schema to apply to module identified in path.
         """
-        return self.query(
+        return self._make_request(
             f"/collections/{collection_name}/roles/{role_name}/schema",
             method="put",
             jsonbody=config_object,

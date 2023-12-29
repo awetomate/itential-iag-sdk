@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class Rbac(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def add_group(
         self,
@@ -42,7 +43,7 @@ class Rbac(ClientBase):
             "roles": roles,
             "users": users,
         }
-        return self.query("/rbac/groups", method="post", jsonbody=parameters)
+        return self._make_request("/rbac/groups", method="post", jsonbody=parameters)
 
     def add_group_roles(self, group_name: str, roles: List[str]) -> Dict:
         """
@@ -51,7 +52,7 @@ class Rbac(ClientBase):
         :param group_name: RBAC group name.
         :param roles: List of roles to assign to group.
         """
-        return self.query(
+        return self._make_request(
             f"/rbac/groups/{group_name}/roles", method="post", jsonbody={"roles": roles}
         )
 
@@ -62,7 +63,7 @@ class Rbac(ClientBase):
         :param group_name: RBAC group name.
         :param users: List of users to assign to group.
         """
-        return self.query(
+        return self._make_request(
             f"/rbac/groups/{group_name}/users", method="post", jsonbody={"users": users}
         )
 
@@ -72,7 +73,7 @@ class Rbac(ClientBase):
 
         :param group_name: RBAC group name.
         """
-        return self.query(f"/rbac/groups/{group_name}", method="delete")
+        return self._make_request(f"/rbac/groups/{group_name}", method="delete")
 
     def delete_group_role(self, group_name: str, role_name: str) -> Dict:
         """
@@ -81,7 +82,7 @@ class Rbac(ClientBase):
         :param group_name: RBAC group name.
         :param role_name: Name of role.
         """
-        return self.query(
+        return self._make_request(
             f"/rbac/groups/{group_name}/roles/{role_name}", method="delete"
         )
 
@@ -92,7 +93,7 @@ class Rbac(ClientBase):
         :param group_name: RBAC group name.
         :param username: Name of user.
         """
-        return self.query(
+        return self._make_request(
             f"/rbac/groups/{group_name}/roles/{username}", method="delete"
         )
 
@@ -102,7 +103,7 @@ class Rbac(ClientBase):
 
         :param group_name: RBAC group name.
         """
-        return self.query(f"/rbac/groups/{group_name}")
+        return self._make_request(f"/rbac/groups/{group_name}")
 
     def get_group_roles(self, group_name: str) -> Dict:
         """
@@ -110,7 +111,7 @@ class Rbac(ClientBase):
 
         :param group_name: RBAC group name.
         """
-        return self.query(f"/rbac/groups/{group_name}/roles")
+        return self._make_request(f"/rbac/groups/{group_name}/roles")
 
     def get_group_users(self, group_name: str) -> Dict:
         """
@@ -118,7 +119,7 @@ class Rbac(ClientBase):
 
         :param group_name: RBAC group name.
         """
-        return self.query(f"/rbac/groups/{group_name}/users")
+        return self._make_request(f"/rbac/groups/{group_name}/users")
 
     def get_groups(
         self,
@@ -135,7 +136,7 @@ class Rbac(ClientBase):
         :param filter: Optional. Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"admin"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             f"/rbac/groups",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -146,7 +147,7 @@ class Rbac(ClientBase):
 
         :param role_name: Name of RBAC role.
         """
-        return self.query(f"/rbac/roles/{role_name}")
+        return self._make_request(f"/rbac/roles/{role_name}")
 
     def get_roles(
         self,
@@ -163,7 +164,7 @@ class Rbac(ClientBase):
         :param filter: Optional. Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"admin"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             f"/rbac/roles",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -185,7 +186,7 @@ class Rbac(ClientBase):
         :param filter: Optional. Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"admin"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             f"/rbac/users/{username}/groups",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -207,7 +208,7 @@ class Rbac(ClientBase):
         :param filter: Optional. Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"admin"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             f"/rbac/users/{username}/roles",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -228,6 +229,6 @@ class Rbac(ClientBase):
         :param description: Optional. Group description.
         """
         parameters = {"description": description, "roles": roles, "users": users}
-        return self.query(
+        return self._make_request(
             f"/rbac/groups/{group_name}", method="put", jsonbody=parameters
         )

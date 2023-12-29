@@ -1,8 +1,9 @@
 import logging
-from typing import Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import requests
 
+from iag_sdk.client_base import ClientBase
 from iag_sdk.modules.accounts import Account
 from iag_sdk.modules.collections import Collection
 from iag_sdk.modules.config import Config
@@ -30,16 +31,16 @@ from iag_sdk.modules.user_schema import UserSchema
 logging.basicConfig(level=logging.INFO)
 
 
-class Iag:
+class Iag(ClientBase):
     def __init__(
         self,
         host: str,
         username: str,
         password: str,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
     ) -> None:
         """
         Constructor to build a new object. Automatically collects an
@@ -61,11 +62,11 @@ class Iag:
         self.protocol: str = protocol
         self.port: str = str(port)
         self.verify: bool = verify
-
+        self.session = requests.Session()
+        self.token = None
         # If verify is false, we should disable unnecessary SSL logging
         if not verify:
             requests.packages.urllib3.disable_warnings()
-
         # Build common headers
         self.headers = {
             "accept": "application/json",
@@ -74,38 +75,57 @@ class Iag:
         # ensure base_url starts with a forward slash
         if not self.base_url.startswith("/"):
             self.base_url = f"/{self.base_url}"
-
         # ensure host value does not contain protocol or port information
         if "://" in self.host:
             self.host = self.host.split(":")[1]
         if ":" in self.host:
             self.host = self.host.split(":")[0]
+        # get a token
+        self.login()
+        # update headers with authorization token
+        self.session.headers.update(self.headers)
+        super().__init__(
+            self.host,
+            self.username,
+            self.password,
+            self.base_url,
+            self.protocol,
+            self.port,
+            self.verify,
+            self.session,
+            self.token,
+        )
 
+    def login(self) -> None:
         try:
-            auth_resp = requests.request(
-                "POST",
+            auth_resp = self.session.post(
                 f"{self.protocol}://{self.host}:{self.port}{self.base_url}/login",
                 headers=self.headers,
                 json={"username": self.username, "password": self.password},
                 verify=self.verify,
             )
             auth_resp.raise_for_status()
-            self.headers["Authorization"] = f"{auth_resp.json()['token']}"
-        except requests.RequestException as auth_error:
+            data = auth_resp.json()
+            self.token = data.get("token")
+            self.headers["Authorization"] = self.token
+        except requests.exceptions.RequestException as auth_error:
             logging.log(
                 logging.ERROR,
-                msg=f"Unable to authenticate with {self.host} using {username}.",
+                msg=f"Unable to authenticate with {self.host} using {self.username}.",
             )
             logging.log(logging.ERROR, msg=str(auth_error))
+
+    def logout(self) -> None:
+        self.session.close()
 
     def query(
         self,
         endpoint: str,
-        method: str = "get",
-        data: Dict = None,
-        jsonbody: Dict = None,
-        params: Dict = None,
-    ) -> requests.Response:
+        method: Optional[str] = "get",
+        data: Optional[Dict[str, Any]] = None,
+        jsonbody: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Optional[Dict[str, Any]]:
         """
         Issues a generic single request. Basically, a wrapper for "requests"
         using the already-stored host, headers, and verify parameters.
@@ -116,28 +136,13 @@ class Iag:
         :param jsonbody: Optional. A JSON object to send as the body.
         :param params: Optional. A dictionary to send as URL parameters.
         """
-        # check for and add missing leading forward slash in API endpoint
-        if not endpoint.startswith("/"):
-            endpoint = f"/{endpoint}"
-
-        try:
-            response = requests.request(
-                method=method,
-                url=f"{self.protocol}://{self.host}:{self.port}{self.base_url}{endpoint}",
-                headers=self.headers,
-                data=data,
-                json=jsonbody,
-                params=params,
-                verify=self.verify,
-            )
-            response.raise_for_status()
-        except requests.RequestException as error:
-            logging.log(
-                logging.ERROR,
-                msg=f"Failed to retrieve response from {self.protocol}://{self.host}:{self.port}{self.base_url}{endpoint}.",
-            )
-            logging.log(logging.ERROR, msg=str(error))
-        return response.json()
+        return self._make_request(
+            endpoint=endpoint,
+            method=method,
+            data=data,
+            jsonbody=jsonbody,
+            params=params,
+        )
 
     @property
     def accounts(self) -> Account:
@@ -145,11 +150,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -158,11 +164,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -171,11 +178,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -184,11 +192,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -197,11 +206,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -210,11 +220,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -223,11 +234,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -236,11 +248,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -249,11 +262,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -262,11 +276,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -275,11 +290,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -288,11 +304,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -301,11 +318,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -314,11 +332,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -327,11 +346,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -340,11 +360,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -353,11 +374,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -366,11 +388,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -379,11 +402,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -392,11 +416,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -405,11 +430,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -418,11 +444,12 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )
 
     @property
@@ -431,9 +458,10 @@ class Iag:
             self.host,
             self.username,
             self.password,
-            self.headers,
             self.base_url,
             self.protocol,
             self.port,
             self.verify,
+            self.session,
+            self.token,
         )

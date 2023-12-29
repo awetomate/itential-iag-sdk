@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,19 +13,20 @@ class SecurityQuestion(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def get_security_questions(self) -> Dict:
         """
         Get security questions for the IAG server.
         """
-        return self.query("/security_questions")
+        return self._make_request("/security_questions")
 
     def get_security_questions_user(self, email: str) -> Dict:
         """
@@ -33,7 +34,7 @@ class SecurityQuestion(ClientBase):
 
         :param email: Email ID of user account.
         """
-        return self.query(f"/security_questions/{email}")
+        return self._make_request(f"/security_questions/{email}")
 
     def validate_security_answers_user(
         self,
@@ -59,6 +60,6 @@ class SecurityQuestion(ClientBase):
             "security_ques2": security_ques2,
             "security_ques2_ans": security_ques2_ans,
         }
-        return self.query(
+        return self._make_request(
             "security_questions/validate_answers", method="post", jsonbody=parameters
         )

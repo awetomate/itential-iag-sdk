@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class Netmiko(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def execute_netmiko_send_command_legacy(
         self,
@@ -51,7 +52,9 @@ class Netmiko(ClientBase):
             },
             "host": host,
         }
-        return self.query("/netmiko/send_command", method="post", jsonbody=parameters)
+        return self._make_request(
+            "/netmiko/send_command", method="post", jsonbody=parameters
+        )
 
     def execute_netmiko_send_command_native(
         self,
@@ -104,11 +107,14 @@ class Netmiko(ClientBase):
             "use_textfsm": use_textfsm,
             "use_ttp": use_ttp,
         }
-        if expect_string: parameters["expect_string"] = expect_string
-        if textfsm_template: parameters["textfsm_template"] = textfsm_template
-        if ttp_template: parameters["ttp_template"] = ttp_template
+        if expect_string:
+            parameters["expect_string"] = expect_string
+        if textfsm_template:
+            parameters["textfsm_template"] = textfsm_template
+        if ttp_template:
+            parameters["ttp_template"] = ttp_template
 
-        return self.query(
+        return self._make_request(
             "/netmiko/send_command/execute", method="post", jsonbody=parameters
         )
 
@@ -142,7 +148,9 @@ class Netmiko(ClientBase):
             },
             "host": host,
         }
-        return self.query("/netmiko/send_config", method="post", jsonbody=parameters)
+        return self._make_request(
+            "/netmiko/send_config", method="post", jsonbody=parameters
+        )
 
     def execute_send_config_set_native(
         self,
@@ -187,10 +195,12 @@ class Netmiko(ClientBase):
             "strip_command": strip_command,
             "strip_prompt": strip_prompt,
         }
-        if config_mode_command: parameters["config_mode_command"] = config_mode_command
-        if error_pattern: parameters["error_pattern"] = error_pattern
+        if config_mode_command:
+            parameters["config_mode_command"] = config_mode_command
+        if error_pattern:
+            parameters["error_pattern"] = error_pattern
 
-        return self.query(
+        return self._make_request(
             "/netmiko/send_config_set/execute", method="post", jsonbody=parameters
         )
 
@@ -211,12 +221,12 @@ class Netmiko(ClientBase):
         :param order: Optional. Sort indication. Available values : 'ascending', 'descending' (default).
         """
         if send_command_type == "native":
-            return self.query(
+            return self._make_request(
                 f"/netmiko/send_command/history",
                 params={"offset": offset, "limit": limit, "order": order},
             )
         else:
-            return self.query(
+            return self._make_request(
                 f"/netmiko/send_command/legacy_history",
                 params={"offset": offset, "limit": limit, "order": order},
             )
@@ -238,12 +248,12 @@ class Netmiko(ClientBase):
         :param order: Optional. Sort indication. Available values : 'ascending', 'descending' (default).
         """
         if send_config_set_type == "native":
-            return self.query(
+            return self._make_request(
                 f"/netmiko/send_config_set/history",
                 params={"offset": offset, "limit": limit, "order": order},
             )
         else:
-            return self.query(
+            return self._make_request(
                 f"/netmiko/send_config/legacy_history",
                 params={"offset": offset, "limit": limit, "order": order},
             )
@@ -254,4 +264,4 @@ class Netmiko(ClientBase):
 
         :param netmiko_command: Name of netmiko command. Available values : send_command, send_config_set
         """
-        return self.query(f"/netmiko/{netmiko_command}/schema")
+        return self._make_request(f"/netmiko/{netmiko_command}/schema")

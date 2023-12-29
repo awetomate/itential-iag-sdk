@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class Group(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def add(
         self,
@@ -41,7 +42,7 @@ class Group(ClientBase):
             group["childGroups"] = childGroups
         if variables:
             group["variables"] = variables
-        return self.query("/groups", method="post", jsonbody=group)
+        return self._make_request("/groups", method="post", jsonbody=group)
 
     def add_children(self, group_name: str, child_group_list: List[str]) -> Dict:
         """
@@ -50,7 +51,7 @@ class Group(ClientBase):
         :param group_name: Name of group.
         :param child_group_list: Child Group List.
         """
-        return self.query(
+        return self._make_request(
             f"/groups/{group_name}/children", method="post", jsonbody=child_group_list
         )
 
@@ -61,7 +62,7 @@ class Group(ClientBase):
         :param group_name: Name of group.
         :param device_list: Device List.
         """
-        return self.query(
+        return self._make_request(
             f"/groups/{group_name}/devices", method="post", jsonbody=device_list
         )
 
@@ -71,7 +72,7 @@ class Group(ClientBase):
 
         :param name: Name of group.
         """
-        return self.query(f"/groups/{name}", method="delete")
+        return self._make_request(f"/groups/{name}", method="delete")
 
     def delete_child(self, name: str, child_group: str) -> Dict:
         """
@@ -80,7 +81,9 @@ class Group(ClientBase):
         :param name: Name of group.
         :param child_group: Name of child group to delete.
         """
-        return self.query(f"/groups/{name}/children/{child_group}", method="delete")
+        return self._make_request(
+            f"/groups/{name}/children/{child_group}", method="delete"
+        )
 
     def delete_device(self, name: str, device: str) -> Dict:
         """
@@ -89,7 +92,7 @@ class Group(ClientBase):
         :param name: Name of group.
         :param device: Name of device.
         """
-        return self.query(f"/groups/{name}/devices/{device}", method="delete")
+        return self._make_request(f"/groups/{name}/devices/{device}", method="delete")
 
     def get(self, group_name: str) -> Dict:
         """
@@ -97,7 +100,7 @@ class Group(ClientBase):
 
         :param group_name: Name of group.
         """
-        return self.query(f"/groups/{group_name}")
+        return self._make_request(f"/groups/{group_name}")
 
     def get_children(self, group_name: str) -> Dict:
         """
@@ -105,7 +108,7 @@ class Group(ClientBase):
 
         :param group_name: Name of group.
         """
-        return self.query(f"/groups/{group_name}/children")
+        return self._make_request(f"/groups/{group_name}/children")
 
     def get_devices(self, group_name: str) -> Dict:
         """
@@ -113,7 +116,7 @@ class Group(ClientBase):
 
         :param group_name: Name of group.
         """
-        return self.query(f"/groups/{group_name}/devices")
+        return self._make_request(f"/groups/{group_name}/devices")
 
     def get_variable(self, group_name: str, variable_name) -> Dict:
         """
@@ -122,7 +125,7 @@ class Group(ClientBase):
         :param group_name: Name of group.
         :param variable_name: Name of variable.
         """
-        return self.query(f"/groups/{group_name}/variables/{variable_name}")
+        return self._make_request(f"/groups/{group_name}/variables/{variable_name}")
 
     def get_variables(self, group_name: str) -> Dict:
         """
@@ -130,7 +133,7 @@ class Group(ClientBase):
 
         :param group_name: Name of group.
         """
-        return self.query(f"/groups/{group_name}/variables")
+        return self._make_request(f"/groups/{group_name}/variables")
 
     def get_all(
         self,
@@ -147,7 +150,7 @@ class Group(ClientBase):
         :param filter: Optional. Response filter function with JSON name/value pair argument as string, i.e., 'equals({"name":"asa"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             "/groups",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -159,4 +162,6 @@ class Group(ClientBase):
         :param name: Name of group
         :param config_object: Group variables.
         """
-        return self.query(f"/groups/{name}", method="put", jsonbody=config_object)
+        return self._make_request(
+            f"/groups/{name}", method="put", jsonbody=config_object
+        )

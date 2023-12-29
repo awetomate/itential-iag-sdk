@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -13,13 +13,14 @@ class Account(ClientBase):
         host: str,
         username: str,
         password: str,
-        headers: Dict,
-        base_url: str = "/api/v2.0",
-        protocol: str = "http",
-        port: Union[int, str] = 8083,
-        verify: bool = True,
+        base_url: Optional[str] = "/api/v2.0",
+        protocol: Optional[str] = "http",
+        port: Optional[Union[int, str]] = 8083,
+        verify: Optional[bool] = True,
+        session = None,
+        token: Optional[str] = None
     ) -> None:
-        super().__init__(host, username, password, headers, base_url, protocol, port, verify)
+        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
 
     def add(
         self, username: str, password: str, firstname: str, lastname: str, email: str
@@ -40,7 +41,7 @@ class Account(ClientBase):
             "password": password,
             "username": username,
         }
-        return self.query("/accounts", method="post", jsonbody=account)
+        return self._make_request("/accounts", method="post", jsonbody=account)
 
     def confirm_eula(self, name: str) -> Dict:
         """
@@ -48,7 +49,7 @@ class Account(ClientBase):
 
         :param name: Name of user account
         """
-        return self.query(f"/accounts/{name}/confirm_eula", method="post")
+        return self._make_request(f"/accounts/{name}/confirm_eula", method="post")
 
     def delete(self, name: str) -> Dict:
         """
@@ -56,7 +57,7 @@ class Account(ClientBase):
 
         :param name: Name of user account
         """
-        return self.query(f"/accounts/{name}", method="delete")
+        return self._make_request(f"/accounts/{name}", method="delete")
 
     def get(self, name: str) -> Dict:
         """
@@ -64,7 +65,7 @@ class Account(ClientBase):
 
         :param name: Name of the user account.
         """
-        return self.query(f"/accounts/{name}")
+        return self._make_request(f"/accounts/{name}")
 
     def get_all(
         self,
@@ -81,7 +82,7 @@ class Account(ClientBase):
         :param filter: Optional. Response filter function with JSON name/value pair argument, i.e., 'contains({"username":"admin"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
-        return self.query(
+        return self._make_request(
             f"/accounts",
             params={"offset": offset, "limit": limit, "filter": filter, "order": order},
         )
@@ -94,7 +95,7 @@ class Account(ClientBase):
         :param name: Name of user account
         :param config_object: Dictionary containing the variables to be updated.
         """
-        return self.query(f"/accounts/{name}", method="put", jsonbody=config_object)
+        return self._make_request(f"/accounts/{name}", method="put", jsonbody=config_object)
 
     def update_password(self, name: str, old_password: str, new_password: str) -> Dict:
         """
@@ -105,6 +106,6 @@ class Account(ClientBase):
         :param new_password: New user password.
         """
         account = {"new_password": new_password, "old_password": old_password}
-        return self.query(
+        return self._make_request(
             f"/accounts/{name}/update_password", method="post", jsonbody=account
         )
