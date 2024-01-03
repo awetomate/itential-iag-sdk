@@ -1,6 +1,14 @@
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
+from iag_sdk.models import (
+    DeviceAddParameters,
+    DeviceUpdateParameters,
+    PathParam,
+    PathParams,
+    QueryParamsFilter,
+    UpdateMethod,
+)
 
 
 class Device(ClientBase):
@@ -17,82 +25,119 @@ class Device(ClientBase):
         protocol: Optional[str] = "http",
         port: Optional[Union[int, str]] = 8083,
         verify: Optional[bool] = True,
-        session = None,
-        token: Optional[str] = None
+        session=None,
+        token: Optional[str] = None,
     ) -> None:
-        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
+        super().__init__(
+            host, username, password, base_url, protocol, port, verify, session, token
+        )
 
-    def add(self, config_object: Dict) -> Dict:
+    def add_device(self, name: str, variables: Dict[str, Any]) -> Dict:
         """
         Add a new device to Ansible inventory.
-        Tip: Use get_device() to get an idea of the format of the config_object.
+        Tip: Use get_device() to get an idea of the format of the variables dict.
 
-        :param config_object: Dictionary containing the device definition.
+        :param name: Name of the device.
+        :param variables: Dictionary containing the device definition.
         """
-        return self._make_request(f"/devices", method="post", jsonbody=config_object)
+        body = DeviceAddParameters(name=name, variables=variables)
+        return self._make_request(
+            f"/devices", method="post", jsonbody=body.model_dump()
+        )
 
-    def delete(self, name: str) -> Dict:
+    def delete_device(self, name: str) -> Dict:
         """
         Delete a device from Ansible inventory.
 
         :param name: Name of the device.
         """
-        return self._make_request(f"/devices/{name}", method="delete")
+        path_params = PathParam(name=name)
+        return self._make_request(
+            "/devices/{name}".format(**path_params.model_dump()), method="delete"
+        )
 
-    def get(self, name: str) -> Dict:
+    def get_device(self, name: str) -> Dict:
         """
         Get information for an Ansible device.
 
         :param name: Name of device.
         """
-        return self._make_request(f"/devices/{name}")
+        path_params = PathParam(name=name)
+        return self._make_request("/devices/{name}".format(**path_params.model_dump()))
 
-    def get_state(self, name: str) -> Dict:
+    def get_device_state(self, name: str) -> Dict:
         """
         Get the connectivity state for an Ansible device.
 
         :param name: Name of device.
         """
-        return self._make_request(f"/devices/{name}/state")
+        path_params = PathParam(name=name)
+        return self._make_request(
+            "/devices/{name}/state".format(**path_params.model_dump())
+        )
 
-    def get_variable(self, name: str, variable_name: str) -> Dict:
+    def get_device_variable(self, name: str, variable_name: str) -> Dict:
         """
         Get the value of a connection variable for an Ansible device.
 
         :param name: Name of device.
         :param variable_name: Name of variable.
         """
-        return self._make_request(f"/devices/{name}/variables/{variable_name}")
+        path_params = PathParams(name=name, module=variable_name)
+        return self._make_request(
+            "/devices/{name}/variables/{module}".format(**path_params.model_dump())
+        )
 
-    def get_variables(self, name: str) -> Dict:
+    def get_device_variables(self, name: str) -> Dict:
         """
         Get the connection variables for an Ansible device.
 
         :param name: Name of device.
         """
-        return self._make_request(f"/devices/{name}/variables")
+        path_params = PathParam(name=name)
+        return self._make_request(
+            "/devices/{name}/variables".format(**path_params.model_dump())
+        )
 
-    def get_all(self, offset: int = 0, limit: int = 100, filter: str = None) -> Dict:
+    def get_devices(
+        self,
+        offset: int = 0,
+        limit: int = 100,
+        filter: str = None,
+        order: str = "ascending",
+    ) -> Dict:
         """
         Get a list of Ansible devices.
 
-        :param offset: The number of items to skip before starting to collect the result set.
-        :param limit: The number of items to return (default 100).
-        :param filter: Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"SW"})' Valid filter functions - contains, equals, startswith, endswith
+        :param offset: Optional. The number of items to skip before starting to collect the result set.
+        :param limit: Optional. The number of items to return (default 100).
+        :param filter: Optional. Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"SW"})' Valid filter functions - contains, equals, startswith, endswith
+        :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
+
         """
+        query_params = QueryParamsFilter(
+            offset=offset, limit=limit, filter=filter, order=order
+        )
         return self._make_request(
-            "/devices", params={"offset": offset, "limit": limit, "filter": filter}
+            "/devices", params=query_params.model_dump(exclude_none=True)
         )
 
-    def update(self, name: str, config_object: Dict, method: str = "put") -> Dict:
+    def update_device(
+        self, name: str, variables: Dict[str, Any], method: str = "put"
+    ) -> Dict:
         """
         Replace the variables for a device in the Ansible inventory.
-        Use get_device() to get an idea of the format of the config_object.
+        Use get_device() to get an idea of the format of the variables dict.
 
         :param name: Name of the device.
-        :param config_object: Dictionary containing the variables to be updated.
+        :param variables: Dictionary containing the variables to be updated.
         :param method: Optional. Choose between 'put' (default) and 'patch'.
         """
+        path_params = PathParam(name=name)
+        rest_method = UpdateMethod(method=method.lower())
+        body = DeviceUpdateParameters(variables=variables)
         return self._make_request(
-            f"/devices/{name}", method=method, jsonbody=config_object
+            "/devices/{name}".format(**path_params.model_dump()),
+            method=rest_method.method,
+            jsonbody=body.variables,
         )

@@ -1,6 +1,13 @@
 from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
+from iag_sdk.models import (
+    AccountParameters,
+    AccountUpdateParameters,
+    AccountUpdatePassword,
+    PathParam,
+    QueryParamsFilter,
+)
 
 
 class Account(ClientBase):
@@ -17,31 +24,40 @@ class Account(ClientBase):
         protocol: Optional[str] = "http",
         port: Optional[Union[int, str]] = 8083,
         verify: Optional[bool] = True,
-        session = None,
-        token: Optional[str] = None
+        session=None,
+        token: Optional[str] = None,
     ) -> None:
-        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
+        super().__init__(
+            host, username, password, base_url, protocol, port, verify, session, token
+        )
 
-    def add(
-        self, username: str, password: str, firstname: str, lastname: str, email: str
+    def add_account(
+        self,
+        username: str,
+        password: str,
+        email: str,
+        firstname: Optional[str] = None,
+        lastname: Optional[str] = None,
     ) -> Dict:
         """
         Add a new user account.
 
         :param username: Username for the account.
         :param password: Password for the account.
-        :param firstname: First name of user.
-        :param lastname: Last name of user.
         :param email: Email address of user.
+        :param firstname: Optional. First name of user.
+        :param lastname: Optional. Last name of user.
         """
-        account = {
-            "email": email,
-            "firstname": firstname,
-            "lastname": lastname,
-            "password": password,
-            "username": username,
-        }
-        return self._make_request("/accounts", method="post", jsonbody=account)
+        body = AccountParameters(
+            email=email,
+            firstname=firstname,
+            lastname=lastname,
+            password=password,
+            username=username,
+        )
+        return self._make_request(
+            "/accounts", method="post", jsonbody=body.model_dump(exclude_none=True)
+        )
 
     def confirm_eula(self, name: str) -> Dict:
         """
@@ -49,25 +65,33 @@ class Account(ClientBase):
 
         :param name: Name of user account
         """
-        return self._make_request(f"/accounts/{name}/confirm_eula", method="post")
+        path_params = PathParam(name=name)
+        return self._make_request(
+            "/accounts/{name}/confirm_eula".format(**path_params.model_dump()),
+            method="post",
+        )
 
-    def delete(self, name: str) -> Dict:
+    def delete_account(self, name: str) -> Dict:
         """
         Delete a user account.
 
         :param name: Name of user account
         """
-        return self._make_request(f"/accounts/{name}", method="delete")
+        path_params = PathParam(name=name)
+        return self._make_request(
+            "/accounts/{name}".format(**path_params.model_dump()), method="delete"
+        )
 
-    def get(self, name: str) -> Dict:
+    def get_account(self, name: str) -> Dict:
         """
         Get information for a user account.
 
         :param name: Name of the user account.
         """
-        return self._make_request(f"/accounts/{name}")
+        path_params = PathParam(name=name)
+        return self._make_request("/accounts/{name}".format(**path_params.model_dump()))
 
-    def get_all(
+    def get_accounts(
         self,
         offset: int = 0,
         limit: int = 50,
@@ -82,12 +106,16 @@ class Account(ClientBase):
         :param filter: Optional. Response filter function with JSON name/value pair argument, i.e., 'contains({"username":"admin"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
+        query_params = QueryParamsFilter(
+            offset=offset, limit=limit, filter=filter, order=order
+        )
         return self._make_request(
-            f"/accounts",
-            params={"offset": offset, "limit": limit, "filter": filter, "order": order},
+            "/accounts", params=query_params.model_dump(exclude_none=True)
         )
 
-    def update(self, name: str, config_object: Dict) -> Dict:
+    def update_account(
+        self, name: str, email: str, firstname: str, lastname: str
+    ) -> Dict:
         """
         Update details of a user account.
         Tip: Use get_account() to get an idea of the format of the config_object.
@@ -95,7 +123,15 @@ class Account(ClientBase):
         :param name: Name of user account
         :param config_object: Dictionary containing the variables to be updated.
         """
-        return self._make_request(f"/accounts/{name}", method="put", jsonbody=config_object)
+        path_params = PathParam(name=name)
+        body = AccountUpdateParameters(
+            email=email, firstname=firstname, lastname=lastname
+        )
+        return self._make_request(
+            "/accounts/{name}".format(**path_params.model_dump()),
+            method="put",
+            jsonbody=body.model_dump(),
+        )
 
     def update_password(self, name: str, old_password: str, new_password: str) -> Dict:
         """
@@ -105,7 +141,12 @@ class Account(ClientBase):
         :param old_password: Old user password.
         :param new_password: New user password.
         """
-        account = {"new_password": new_password, "old_password": old_password}
+        path_params = PathParam(name=name)
+        body = AccountUpdatePassword(
+            new_password=new_password, old_password=old_password
+        )
         return self._make_request(
-            f"/accounts/{name}/update_password", method="post", jsonbody=account
+            "/accounts/{name}/update_password".format(**path_params.model_dump()),
+            method="post",
+            jsonbody=body.model_dump(),
         )

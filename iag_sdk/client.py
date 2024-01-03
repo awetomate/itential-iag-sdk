@@ -4,29 +4,31 @@ from typing import Any, Dict, Optional, Union
 import requests
 
 from iag_sdk.client_base import ClientBase
-from iag_sdk.modules.accounts import Account
-from iag_sdk.modules.collections import Collection
-from iag_sdk.modules.config import Config
-from iag_sdk.modules.devices import Device
-from iag_sdk.modules.groups import Group
-from iag_sdk.modules.http_requests import HttpRequest
-from iag_sdk.modules.inventory import Inventory
-from iag_sdk.modules.ldap import Ldap
-from iag_sdk.modules.modules import Module
-from iag_sdk.modules.netconf import Netconf
-from iag_sdk.modules.netmiko import Netmiko
-from iag_sdk.modules.nornir import Nornir
-from iag_sdk.modules.password_reset import PasswordReset
-from iag_sdk.modules.playbooks import Playbook
-from iag_sdk.modules.pronghorn import Pronghorn
-from iag_sdk.modules.rbac import Rbac
-from iag_sdk.modules.roles import Role
-from iag_sdk.modules.scripts import Script
-from iag_sdk.modules.secrets import Secret
-from iag_sdk.modules.security_questions import SecurityQuestion
-from iag_sdk.modules.system import System
-from iag_sdk.modules.terraforms import Terraform
-from iag_sdk.modules.user_schema import UserSchema
+from iag_sdk.modules import (
+    Account,
+    Collection,
+    Config,
+    Device,
+    Group,
+    HttpRequest,
+    Inventory,
+    Ldap,
+    Module,
+    Netconf,
+    Netmiko,
+    Nornir,
+    PasswordReset,
+    Playbook,
+    Pronghorn,
+    Rbac,
+    Role,
+    Script,
+    Secret,
+    SecurityQuestion,
+    System,
+    Terraform,
+    UserSchema
+)
 
 logging.basicConfig(level=logging.INFO)
 

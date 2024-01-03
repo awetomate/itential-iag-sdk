@@ -1,6 +1,7 @@
 from typing import Dict, Optional, Union
 
 from iag_sdk.client_base import ClientBase
+from iag_sdk.models import PathParam, QueryParams
 
 
 class System(ClientBase):
@@ -17,10 +18,12 @@ class System(ClientBase):
         protocol: Optional[str] = "http",
         port: Optional[Union[int, str]] = 8083,
         verify: Optional[bool] = True,
-        session = None,
-        token: Optional[str] = None
+        session=None,
+        token: Optional[str] = None,
     ) -> None:
-        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
+        super().__init__(
+            host, username, password, base_url, protocol, port, verify, session, token
+        )
 
     def get_audit_log(self, audit_id: str) -> Dict:
         """
@@ -28,7 +31,10 @@ class System(ClientBase):
 
         :param audit_id: Audit id of execution.
         """
-        return self._make_request(f"/exec_history/{audit_id}")
+        path_params = PathParam(name=audit_id)
+        return self._make_request(
+            "/exec_history/{name}".format(**path_params.model_dump())
+        )
 
     def get_audit_logs(
         self, offset: int = 0, limit: int = 50, order: str = "descending"
@@ -40,8 +46,9 @@ class System(ClientBase):
         :param limit: Optional. The number of items to return (default 50).
         :param order: Optional. Sort indication. Available values : 'ascending', 'descending' (default).
         """
+        query_params = QueryParams(offset=offset, limit=limit, order=order)
         return self._make_request(
-            "/audit", params={"offset": offset, "limit": limit, "order": order}
+            "/audit", params=query_params.model_dump()
         )
 
     def get_health(self) -> Dict:

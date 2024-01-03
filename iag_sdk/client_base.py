@@ -20,7 +20,7 @@ class ClientBase:
         protocol: Optional[str] = "http",
         port: Optional[Union[int, str]] = 8083,
         verify: Optional[bool] = True,
-        session: Optional[requests.session] = None,
+        session: Optional[requests.Session] = None,
         token: Optional[str] = None,
     ) -> None:
         """
