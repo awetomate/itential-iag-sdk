@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from iag_sdk.client_base import ClientBase
 from iag_sdk.models import (
@@ -38,7 +38,7 @@ class Account(ClientBase):
         email: str,
         firstname: Optional[str] = None,
         lastname: Optional[str] = None,
-    ) -> Dict:
+    ) -> dict:
         """
         Add a new user account.
 
@@ -59,7 +59,7 @@ class Account(ClientBase):
             "/accounts", method="post", jsonbody=body.model_dump(exclude_none=True)
         )
 
-    def confirm_eula(self, name: str) -> Dict:
+    def confirm_eula(self, name: str) -> dict:
         """
         Confirm EULA for an account.
 
@@ -71,7 +71,7 @@ class Account(ClientBase):
             method="post",
         )
 
-    def delete_account(self, name: str) -> Dict:
+    def delete_account(self, name: str) -> dict:
         """
         Delete a user account.
 
@@ -82,7 +82,7 @@ class Account(ClientBase):
             "/accounts/{name}".format(**path_params.model_dump()), method="delete"
         )
 
-    def get_account(self, name: str) -> Dict:
+    def get_account(self, name: str) -> dict:
         """
         Get information for a user account.
 
@@ -97,7 +97,7 @@ class Account(ClientBase):
         limit: int = 50,
         filter: str = None,
         order: str = "ascending",
-    ) -> Dict:
+    ) -> dict:
         """
         Get a list of user accounts.
 
@@ -115,13 +115,13 @@ class Account(ClientBase):
 
     def update_account(
         self, name: str, email: str, firstname: str, lastname: str
-    ) -> Dict:
+    ) -> dict:
         """
         Update details of a user account.
         Tip: Use get_account() to get an idea of the format of the config_object.
 
         :param name: Name of user account
-        :param config_object: Dictionary containing the variables to be updated.
+        :param config_object: dictionary containing the variables to be updated.
         """
         path_params = PathParam(name=name)
         body = AccountUpdateParameters(
@@ -133,7 +133,7 @@ class Account(ClientBase):
             jsonbody=body.model_dump(),
         )
 
-    def update_password(self, name: str, old_password: str, new_password: str) -> Dict:
+    def update_password(self, name: str, old_password: str, new_password: str) -> dict:
         """
         Update user login credentials.
 

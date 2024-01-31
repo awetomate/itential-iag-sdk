@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 from iag_sdk.models import (
@@ -32,7 +32,7 @@ class Device(ClientBase):
             host, username, password, base_url, protocol, port, verify, session, token
         )
 
-    def add_device(self, name: str, variables: Dict[str, Any]) -> Dict:
+    def add_device(self, name: str, variables: dict[str, Any]) -> dict:
         """
         Add a new device to Ansible inventory.
         Tip: Use get_device() to get an idea of the format of the variables dict.
@@ -42,10 +42,10 @@ class Device(ClientBase):
         """
         body = DeviceAddParameters(name=name, variables=variables)
         return self._make_request(
-            f"/devices", method="post", jsonbody=body.model_dump()
+            "/devices", method="post", jsonbody=body.model_dump(exclude_none=True)
         )
 
-    def delete_device(self, name: str) -> Dict:
+    def delete_device(self, name: str) -> dict:
         """
         Delete a device from Ansible inventory.
 
@@ -56,7 +56,7 @@ class Device(ClientBase):
             "/devices/{name}".format(**path_params.model_dump()), method="delete"
         )
 
-    def get_device(self, name: str) -> Dict:
+    def get_device(self, name: str) -> dict:
         """
         Get information for an Ansible device.
 
@@ -65,7 +65,7 @@ class Device(ClientBase):
         path_params = PathParam(name=name)
         return self._make_request("/devices/{name}".format(**path_params.model_dump()))
 
-    def get_device_state(self, name: str) -> Dict:
+    def get_device_state(self, name: str) -> dict:
         """
         Get the connectivity state for an Ansible device.
 
@@ -76,7 +76,7 @@ class Device(ClientBase):
             "/devices/{name}/state".format(**path_params.model_dump())
         )
 
-    def get_device_variable(self, name: str, variable_name: str) -> Dict:
+    def get_device_variable(self, name: str, variable_name: str) -> dict:
         """
         Get the value of a connection variable for an Ansible device.
 
@@ -88,7 +88,7 @@ class Device(ClientBase):
             "/devices/{name}/variables/{module}".format(**path_params.model_dump())
         )
 
-    def get_device_variables(self, name: str) -> Dict:
+    def get_device_variables(self, name: str) -> dict:
         """
         Get the connection variables for an Ansible device.
 
@@ -105,7 +105,7 @@ class Device(ClientBase):
         limit: int = 100,
         filter: str = None,
         order: str = "ascending",
-    ) -> Dict:
+    ) -> dict:
         """
         Get a list of Ansible devices.
 
@@ -123,8 +123,8 @@ class Device(ClientBase):
         )
 
     def update_device(
-        self, name: str, variables: Dict[str, Any], method: str = "put"
-    ) -> Dict:
+        self, name: str, variables: dict[str, Any], method: str = "put"
+    ) -> dict:
         """
         Replace the variables for a device in the Ansible inventory.
         Use get_device() to get an idea of the format of the variables dict.

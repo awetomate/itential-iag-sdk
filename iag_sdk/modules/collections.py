@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 from iag_sdk.models import (
@@ -34,7 +34,7 @@ class Collection(ClientBase):
             host, username, password, base_url, protocol, port, verify, session, token
         )
 
-    def add_collection(self, config_object: Dict) -> Dict:
+    def add_collection(self, config_object: dict) -> dict:
         """
         Install an Ansible collection from a Galaxy server or from a tarball.
 
@@ -43,10 +43,12 @@ class Collection(ClientBase):
         # TODO: replace config_object with arguments
         body = CollectionInstallParameters(**config_object)
         return self._make_request(
-            "/collections/install", method="post", jsonbody=body.model_dump(exclude_none=True)
+            "/collections/install",
+            method="post",
+            jsonbody=body.model_dump(exclude_none=True),
         )
 
-    def delete_module_schema(self, collection_name: str, module_name: str) -> Dict:
+    def delete_module_schema(self, collection_name: str, module_name: str) -> dict:
         """
         Remove a schema for a module in the Ansible collection.
 
@@ -61,7 +63,7 @@ class Collection(ClientBase):
             method="delete",
         )
 
-    def delete_role_schema(self, collection_name: str, role_name: str) -> Dict:
+    def delete_role_schema(self, collection_name: str, role_name: str) -> dict:
         """
         Remove a schema for a role in the Ansible collection.
 
@@ -76,7 +78,7 @@ class Collection(ClientBase):
             method="delete",
         )
 
-    def get_collection(self, collection_name: str) -> Dict:
+    def get_collection(self, collection_name: str) -> dict:
         """
         Get details for an Ansible collection.
 
@@ -87,7 +89,7 @@ class Collection(ClientBase):
             "/collections/{name}".format(**path_params.model_dump())
         )
 
-    def get_module(self, collection_name: str, module_name: str) -> Dict:
+    def get_module(self, collection_name: str, module_name: str) -> dict:
         """
         Get details for an Ansible collection.
 
@@ -106,7 +108,7 @@ class Collection(ClientBase):
         offset: int = 0,
         limit: int = 10,
         order: str = "descending",
-    ) -> Dict:
+    ) -> dict:
         """
         Get execution log events for an Ansible collection module.
         Tip: Use get_audit_log() and the audit_id returned by this call, to get the details of the execution.
@@ -126,7 +128,7 @@ class Collection(ClientBase):
             params=query_params.model_dump(),
         )
 
-    def get_module_schema(self, collection_name: str, module_name: str) -> Dict:
+    def get_module_schema(self, collection_name: str, module_name: str) -> dict:
         """
         Get the schema for a module in the Ansible collection.
 
@@ -148,7 +150,7 @@ class Collection(ClientBase):
         filter: str = None,
         order: str = "ascending",
         detail: str = "summary",
-    ) -> Dict:
+    ) -> dict:
         """
         Get module list for an Ansible collection.
 
@@ -168,7 +170,7 @@ class Collection(ClientBase):
             params=query_params.model_dump(exclude_none=True),
         )
 
-    def get_role(self, collection_name: str, role_name: str) -> Dict:
+    def get_role(self, collection_name: str, role_name: str) -> dict:
         """
         Get details for a role in the Ansible collection.
 
@@ -187,7 +189,7 @@ class Collection(ClientBase):
         offset: int = 0,
         limit: int = 10,
         order: str = "descending",
-    ) -> Dict:
+    ) -> dict:
         """
         Get execution log events for an Ansible collection role.
         Tip: Use get_audit_log() and the audit_id returned by this call, to get the details of the execution.
@@ -207,7 +209,7 @@ class Collection(ClientBase):
             params=query_params.model_dump(),
         )
 
-    def get_role_schema(self, collection_name: str, role_name: str) -> Dict:
+    def get_role_schema(self, collection_name: str, role_name: str) -> dict:
         """
         Get the schema for a role in the Ansible collection.
 
@@ -229,7 +231,7 @@ class Collection(ClientBase):
         filter: str = None,
         order: str = "ascending",
         detail: str = "summary",
-    ) -> Dict:
+    ) -> dict:
         """
         Get role list for an Ansible collection.
 
@@ -256,7 +258,7 @@ class Collection(ClientBase):
         filter: str = None,
         order: str = "ascending",
         detail: str = "summary",
-    ) -> Dict:
+    ) -> dict:
         """
         Get list of installed Ansible collections.
 
@@ -273,7 +275,7 @@ class Collection(ClientBase):
             "/collections", params=query_params.model_dump(exclude_none=True)
         )
 
-    def refresh_collections(self) -> Dict:
+    def refresh(self) -> dict:
         """
         Perform Ansible collection discovery and update internal cache.
         """
@@ -283,13 +285,13 @@ class Collection(ClientBase):
         self,
         collection_name: str,
         module_name: str,
-        args: Dict[str, Any],
-        groups: Optional[List[str]] = None,
-        hosts: Optional[List[str]] = None,
+        args: dict[str, Any],
+        groups: Optional[list[str]] = None,
+        hosts: Optional[list[str]] = None,
         provider_required: Optional[bool] = None,
         strict_args: Optional[bool] = None,
         template: Optional[str] = None,
-    ) -> Dict:
+    ) -> dict:
         """
         Execute a module contained within the Ansible collection.
 
@@ -323,12 +325,12 @@ class Collection(ClientBase):
         self,
         collection_name: str,
         role_name: str,
-        args: Dict[str, Any],
-        groups: Optional[List[str]] = None,
-        hosts: Optional[List[str]] = None,
+        args: dict[str, Any],
+        groups: Optional[list[str]] = None,
+        hosts: Optional[list[str]] = None,
         strict_args: Optional[bool] = None,
         template: Optional[str] = None,
-    ) -> Dict:
+    ) -> dict:
         """
         Execute a module contained within the Ansible collection.
 
@@ -357,8 +359,8 @@ class Collection(ClientBase):
         )
 
     def update_module_schema(
-        self, collection_name: str, module_name: str, schema_object: Dict
-    ) -> Dict:
+        self, collection_name: str, module_name: str, schema_object: dict
+    ) -> dict:
         """
         Update/Insert a schema document for module in the Ansible collection.
         Tip: Use get_collection_module_schema() to get an idea of the format of the schema_object.
@@ -378,15 +380,15 @@ class Collection(ClientBase):
         )
 
     def update_role_schema(
-        self, collection_name: str, role_name: str, schema_object: Dict
-    ) -> Dict:
+        self, collection_name: str, role_name: str, schema_object: dict
+    ) -> dict:
         """
         Update/Insert a schema document for role in the Ansible collection.
         Tip: Use get_collection_role_schema() to get an idea of the format of the config_object.
 
         :param collection_name: Name of collection.
         :param role_name: Name of role.
-        :param schema_object: Schema to apply to module identified in path.
+        :param schema_object: Schema to apply to role identified in path.
         """
         path_params = PathParams(name=collection_name, module=role_name)
         body = Schema(**schema_object)

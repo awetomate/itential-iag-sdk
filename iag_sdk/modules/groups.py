@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 from iag_sdk.client_base import ClientBase
 from iag_sdk.models import (
@@ -36,10 +36,10 @@ class Group(ClientBase):
     def add_group(
         self,
         group_name: str,
-        devices: List[str],
-        childGroups: List[str] = None,
-        variables: Dict = None,
-    ) -> Dict:
+        devices: list[str],
+        child_groups: list[str] = None,
+        variables: dict = None,
+    ) -> dict:
         """
         Add a new Ansible device group.
 
@@ -51,14 +51,14 @@ class Group(ClientBase):
         body = GroupAddParameters(
             name=group_name,
             devices=devices,
-            childGroups=childGroups,
+            childGroups=child_groups,
             variables=variables,
         )
         return self._make_request(
             "/groups", method="post", jsonbody=body.model_dump(exclude_none=True)
         )
 
-    def add_group_children(self, group_name: str, child_group_list: List[str]) -> Dict:
+    def add_group_children(self, group_name: str, child_group_list: list[str]) -> dict:
         """
         Add new child groups to an Ansible device group.
 
@@ -73,7 +73,7 @@ class Group(ClientBase):
             jsonbody=body.model_dump(),
         )
 
-    def add_group_devices(self, group_name: str, device_list: List[str]) -> Dict:
+    def add_group_devices(self, group_name: str, device_list: list[str]) -> dict:
         """
         Add new devices to an Ansible device group.
 
@@ -88,7 +88,7 @@ class Group(ClientBase):
             jsonbody=body.model_dump(),
         )
 
-    def delete_group(self, group_name: str) -> Dict:
+    def delete_group(self, group_name: str) -> dict:
         """
         Delete an Ansible device group.
 
@@ -99,7 +99,7 @@ class Group(ClientBase):
             "/groups/{name}".format(**path_params.model_dump()), method="delete"
         )
 
-    def delete_group_child(self, group_name: str, child_group: str) -> Dict:
+    def delete_group_child(self, group_name: str, child_group: str) -> dict:
         """
         Delete a child group from an Ansible device group.
 
@@ -112,7 +112,7 @@ class Group(ClientBase):
             method="delete",
         )
 
-    def delete_group_device(self, group_name: str, device_name: str) -> Dict:
+    def delete_group_device(self, group_name: str, device_name: str) -> dict:
         """
         Delete a device from an Ansible device group.
 
@@ -125,7 +125,7 @@ class Group(ClientBase):
             method="delete",
         )
 
-    def get_group(self, group_name: str) -> Dict:
+    def get_group(self, group_name: str) -> dict:
         """
         Get information for an Ansible device group.
 
@@ -134,7 +134,7 @@ class Group(ClientBase):
         path_params = PathParam(name=group_name)
         return self._make_request("/groups/{name}".format(**path_params.model_dump()))
 
-    def get_group_children(self, group_name: str) -> Dict:
+    def get_group_children(self, group_name: str) -> dict:
         """
         Get a list of child groups for an Ansible device group.
 
@@ -145,7 +145,7 @@ class Group(ClientBase):
             "/groups/{name}/children".format(**path_params.model_dump())
         )
 
-    def get_group_devices(self, group_name: str) -> Dict:
+    def get_group_devices(self, group_name: str) -> dict:
         """
         Get the devices for an Ansible device group.
 
@@ -156,7 +156,7 @@ class Group(ClientBase):
             "/groups/{name}/devices".format(**path_params.model_dump())
         )
 
-    def get_group_variable(self, group_name: str, variable_name) -> Dict:
+    def get_group_variable(self, group_name: str, variable_name) -> dict:
         """
         Get the contents of a variable for an Ansible device group.
 
@@ -168,7 +168,7 @@ class Group(ClientBase):
             "/groups/{name}/variables/{module}".format(**path_params.model_dump())
         )
 
-    def get_group_variables(self, group_name: str) -> Dict:
+    def get_group_variables(self, group_name: str) -> dict:
         """
         Get the variables for an Ansible device group.
 
@@ -185,7 +185,7 @@ class Group(ClientBase):
         limit: int = 50,
         filter: str = None,
         order: str = "ascending",
-    ) -> Dict:
+    ) -> dict:
         """
         Get a list of Ansible device groups.
 
@@ -202,7 +202,7 @@ class Group(ClientBase):
             params=query_params.model_dump(exclude_none=True),
         )
 
-    def update_group(self, group_name: str, variables: Dict[str, Any]) -> Dict:
+    def update_group(self, group_name: str, variables: dict[str, Any]) -> dict:
         """
         Update the variables in an Ansbile device group.
 

@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from iag_sdk.client_base import ClientBase
 from iag_sdk.models import ConfigParameters
@@ -25,13 +25,13 @@ class Config(ClientBase):
             host, username, password, base_url, protocol, port, verify, session, token
         )
 
-    def get_config(self) -> Dict:
+    def get_config(self) -> dict:
         """
         Fetch config value from IAG server database.
         """
         return self._make_request("/config")
 
-    def update_config(self, config_object: Dict) -> Dict:
+    def update_config(self, config_object: dict) -> dict:
         """
         Update config to AG server database.
         Tip: Use get_config() to get the format of the config_object.
