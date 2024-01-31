@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import requests
 
@@ -27,7 +27,7 @@ from iag_sdk.modules import (
     SecurityQuestion,
     System,
     Terraform,
-    UserSchema
+    UserSchema,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -124,10 +124,10 @@ class Iag(ClientBase):
         self,
         endpoint: str,
         method: Optional[str] = "get",
-        data: Optional[Dict[str, Any]] = None,
-        jsonbody: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
-    ) -> Optional[Dict[str, Any]]:
+        data: Optional[dict[str, Any]] = None,
+        jsonbody: Optional[dict[str, Any]] = None,
+        params: Optional[dict[str, Any]] = None,
+    ) -> Optional[dict[str, Any]]:
         """
         Issues a generic single request. Basically, a wrapper for "requests"
         using the already-stored host, headers, and verify parameters.

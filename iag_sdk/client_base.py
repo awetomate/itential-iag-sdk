@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import requests
 
@@ -79,9 +79,9 @@ class ClientBase:
         self,
         endpoint: str,
         method: str = "get",
-        data: Optional[Dict[str, Any]] = None,
-        jsonbody: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        data: Optional[dict[str, Any]] = None,
+        jsonbody: Optional[dict[str, Any]] = None,
+        params: Optional[dict[str, Any]] = None,
     ) -> Optional[requests.Response]:
         """
         Issues a generic single request. Basically, a wrapper for "requests"
