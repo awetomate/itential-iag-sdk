@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from iag_sdk.client_base import ClientBase
 from iag_sdk.models import PathParam, QueryParams
@@ -25,7 +25,7 @@ class System(ClientBase):
             host, username, password, base_url, protocol, port, verify, session, token
         )
 
-    def get_audit_log(self, audit_id: str) -> Dict:
+    def get_audit_log(self, audit_id: str) -> dict:
         """
         Get execution history payload.
 
@@ -38,7 +38,7 @@ class System(ClientBase):
 
     def get_audit_logs(
         self, offset: int = 0, limit: int = 50, order: str = "descending"
-    ) -> Dict:
+    ) -> dict:
         """
         Retrieve execution audit logs persisted in the database.
 
@@ -47,24 +47,22 @@ class System(ClientBase):
         :param order: Optional. Sort indication. Available values : 'ascending', 'descending' (default).
         """
         query_params = QueryParams(offset=offset, limit=limit, order=order)
-        return self._make_request(
-            "/audit", params=query_params.model_dump()
-        )
+        return self._make_request("/audit", params=query_params.model_dump())
 
-    def get_health(self) -> Dict:
+    def get_health(self) -> dict:
         """
         Determine if AG server is up and running.
         """
         return self._make_request("/poll")
 
-    def get_openapi_spec(self) -> Dict:
+    def get_openapi_spec(self) -> dict:
         """
         Get the current OpenAPI spec from the running instance of IAG
         """
         return self._make_request("/openapi_spec")
 
-    def get_status(self) -> Dict:
+    def get_status(self) -> dict:
         """
         Get the AG server status (version, ansible version, etc).
         """
-        return self._make_request(f"/status")
+        return self._make_request("/status")
