@@ -1,6 +1,13 @@
-from typing import Dict, Optional, Union
+from typing import Any, Optional, Union
 
 from iag_sdk.client_base import ClientBase
+from iag_sdk.models import (
+    ModuleExecuteParameters,
+    PathParam,
+    QueryParams,
+    QueryParamsDetail,
+    Schema,
+)
 
 
 class Module(ClientBase):
@@ -17,42 +24,73 @@ class Module(ClientBase):
         protocol: Optional[str] = "http",
         port: Optional[Union[int, str]] = 8083,
         verify: Optional[bool] = True,
-        session = None,
-        token: Optional[str] = None
+        session=None,
+        token: Optional[str] = None,
     ) -> None:
-        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
+        super().__init__(
+            host, username, password, base_url, protocol, port, verify, session, token
+        )
 
-    def delete_schema(self, name: str) -> Dict:
+    def delete_module_schema(self, name: str) -> dict:
         """
         Remove an Ansible module schema.
 
         :param name: Name of module
         """
-        return self._make_request(f"/modules/{name}/schema", method="delete")
+        path_params = PathParam(name=name)
+        return self._make_request(
+            "/modules/{name}/schema".format(**path_params.model_dump()), method="delete"
+        )
 
-    def execute(self, name: str, parameters: Dict) -> Dict:
+    def execute_module(
+        self,
+        name: str,
+        args: dict[str, Any],
+        groups: Optional[list[str]] = None,
+        hosts: Optional[list[str]] = None,
+        provider_required: Optional[bool] = None,
+        strict_args: Optional[bool] = None,
+        template: Optional[str] = None,
+    ) -> dict:
         """
         Execute an Ansible module.
         Tip: Use get_module_schema() to get the format of the parameters object.
 
         :param name: Name of module to be executed.
-        :param parameters: Module Execution Parameters
+        :param args: Module Execution Parameters.
+        :param groups: Optional. list of Ansible device groups.
+        :param hosts: Optional. list of Ansible hosts.
+        :param provider_required: Optional. Enable/disable automation of provider object.
+        :param strict_args: Optional. Override global strict args setting.
+        :param template: Optional. TextFSM template.
         """
+        path_params = PathParam(name=name)
+        body = ModuleExecuteParameters(
+            args=args,
+            groups=groups,
+            hosts=hosts,
+            provider_required=provider_required,
+            strict_args=strict_args,
+            template=template,
+        )
         return self._make_request(
-            f"/modules/{name}/execute", method="post", jsonbody=parameters
+            "/modules/{name}/execute".format(**path_params.model_dump()),
+            method="post",
+            jsonbody=body.model_dump(exclude_none=True),
         )
 
-    def get(self, name: str) -> Dict:
+    def get_module(self, name: str) -> dict:
         """
         Get information for an Ansible module.
 
         :param name: Name of module to retrieve.
         """
-        return self._make_request(f"/modules/{name}")
+        path_params = PathParam(name=name)
+        return self._make_request("/modules/{name}".format(**path_params.model_dump()))
 
-    def get_history(
+    def get_module_history(
         self, name: str, offset: int = 0, limit: int = 10, order: str = "descending"
-    ) -> Dict:
+    ) -> dict:
         """
         Get execution log events for an Ansible module.
         Tip: Use get_audit_log() and the audit_id returned by this call, to get the details of the execution.
@@ -62,27 +100,32 @@ class Module(ClientBase):
         :param limit: Optional.The number of items to return (default 10).
         :param order: Optional. Sort indication. Available values : 'ascending', 'descending' (default).
         """
+        path_params = PathParam(name=name)
+        query_params = QueryParams(offset=offset, limit=limit, order=order)
         return self._make_request(
-            f"/modules/{name}/history",
-            params={"offset": offset, "limit": limit, "order": order},
+            "/modules/{name}/history".format(**path_params.model_dump()),
+            params=query_params.model_dump(),
         )
 
-    def get_schema(self, name: str) -> Dict:
+    def get_module_schema(self, name: str) -> dict:
         """
         Get the schema for an Ansible module.
 
         :param name: Name of module to retrieve.
         """
-        return self._make_request(f"/modules/{name}/schema")
+        path_params = PathParam(name=name)
+        return self._make_request(
+            "/modules/{name}/schema".format(**path_params.model_dump())
+        )
 
-    def get_all(
+    def get_modules(
         self,
         offset: int = 0,
         limit: int = 50,
         filter: str = None,
         order: str = "ascending",
         detail: str = "summary",
-    ) -> Dict:
+    ) -> dict:
         """
         Get a list of Ansible modules.
 
@@ -92,30 +135,31 @@ class Module(ClientBase):
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         :param detail: Optional. Select detail level between 'full' (a lot of data) or 'summary' (default) for each item.
         """
+        query_params = QueryParamsDetail(
+            offset=offset, limit=limit, filter=filter, order=order, detail=detail
+        )
         return self._make_request(
-            f"/modules",
-            params={
-                "offset": offset,
-                "limit": limit,
-                "filter": filter,
-                "order": order,
-                "detail": detail,
-            },
+            "/modules", params=query_params.model_dump(exclude_none=True)
         )
 
-    def update_schema(self, name: str, config_object: Dict) -> Dict:
-        """
-        Update/Insert an Ansible module schema document.
-
-        :param name: Name of module.
-        :param config_object: Dictionary containing the updated module schema definition.
-        """
-        return self._make_request(
-            f"/modules/{name}/schema", method="put", jsonbody=config_object
-        )
-
-    def refresh(self) -> Dict:
+    def refresh(self) -> dict:
         """
         Perform Ansible module discovery and update internal cache.
         """
         return self._make_request("/modules/refresh", method="post")
+
+    def update_module_schema(self, name: str, schema_object: dict) -> dict:
+        """
+        Update/Insert an Ansible module schema document.
+        Tip: Use get_module_schema() to get an idea of the format of the schema_object.
+
+        :param name: Name of module.
+        :param schema_object: Schema to apply to module identified in path.
+        """
+        path_params = PathParam(name=name)
+        body = Schema(**schema_object)
+        return self._make_request(
+            "/modules/{name}/schema".format(**path_params.model_dump()),
+            method="put",
+            jsonbody=body.model_dump(exclude_none=True),
+        )

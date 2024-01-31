@@ -1,6 +1,15 @@
-from typing import Dict, List, Optional, Union
+from typing import Optional, Union
 
 from iag_sdk.client_base import ClientBase
+from iag_sdk.models import (
+    PathParam,
+    PathParams,
+    QueryParamsFilter,
+    RbacAddGroupParameters,
+    RbacAddGroupRolesParameters,
+    RbacAddGroupUsersParameters,
+    RbacUpdateGroupParameters,
+)
 
 
 class Rbac(ClientBase):
@@ -17,109 +26,134 @@ class Rbac(ClientBase):
         protocol: Optional[str] = "http",
         port: Optional[Union[int, str]] = 8083,
         verify: Optional[bool] = True,
-        session = None,
-        token: Optional[str] = None
+        session=None,
+        token: Optional[str] = None,
     ) -> None:
-        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
+        super().__init__(
+            host, username, password, base_url, protocol, port, verify, session, token
+        )
 
     def add_group(
         self,
         group_name: str,
-        roles: List[str],
-        users: List[str] = None,
+        roles: list[str],
+        users: list[str] = None,
         description: str = None,
-    ) -> Dict:
+    ) -> dict:
         """
         Add a new RBAC group
 
         :param group_name: RBAC group name.
-        :param roles: List of roles to assign to group.
-        :param users: Optional. List of users to assign to group.
+        :param roles: list of roles to assign to group.
+        :param users: Optional. list of users to assign to group.
         :param description: Optional. Group description.
         """
-        parameters = {
-            "description": description,
-            "name": group_name,
-            "roles": roles,
-            "users": users,
-        }
-        return self._make_request("/rbac/groups", method="post", jsonbody=parameters)
+        body = RbacAddGroupParameters(
+            name=group_name, description=description, roles=roles, users=users
+        )
+        return self._make_request(
+            "/rbac/groups", method="post", jsonbody=body.model_dump(exclude_none=True)
+        )
 
-    def add_group_roles(self, group_name: str, roles: List[str]) -> Dict:
+    def add_group_roles(self, group_name: str, roles: list[str]) -> dict:
         """
         Add new roles to the RBAC group.
 
         :param group_name: RBAC group name.
-        :param roles: List of roles to assign to group.
+        :param roles: list of roles to assign to group.
         """
+        path_params = PathParam(name=group_name)
+        body = RbacAddGroupRolesParameters(roles=roles)
         return self._make_request(
-            f"/rbac/groups/{group_name}/roles", method="post", jsonbody={"roles": roles}
+            "/rbac/groups/{name}/roles".format(**path_params.model_dump()),
+            method="post",
+            jsonbody=body.model_dump(),
         )
 
-    def add_group_users(self, group_name: str, users: List[str]) -> Dict:
+    def add_group_users(self, group_name: str, users: list[str]) -> dict:
         """
         Add new users to the RBAC group.
 
         :param group_name: RBAC group name.
-        :param users: List of users to assign to group.
+        :param users: list of users to assign to group.
         """
+        path_params = PathParam(name=group_name)
+        body = RbacAddGroupUsersParameters(users=users)
         return self._make_request(
-            f"/rbac/groups/{group_name}/users", method="post", jsonbody={"users": users}
+            "/rbac/groups/{name}/users".format(**path_params.model_dump()),
+            method="post",
+            jsonbody=body.model_dump(),
         )
 
-    def delete_group(self, group_name: str) -> Dict:
+    def delete_group(self, group_name: str) -> dict:
         """
         Delete an RBAC group.
 
         :param group_name: RBAC group name.
         """
-        return self._make_request(f"/rbac/groups/{group_name}", method="delete")
+        path_params = PathParam(name=group_name)
+        return self._make_request(
+            "/rbac/groups/{name}".format(**path_params.model_dump()), method="delete"
+        )
 
-    def delete_group_role(self, group_name: str, role_name: str) -> Dict:
+    def delete_group_role(self, group_name: str, role_name: str) -> dict:
         """
         Delete a role from the RBAC group.
 
         :param group_name: RBAC group name.
         :param role_name: Name of role.
         """
+        path_params = PathParams(name=group_name, module=role_name)
         return self._make_request(
-            f"/rbac/groups/{group_name}/roles/{role_name}", method="delete"
+            "/rbac/groups/{name}/roles/{module}".format(**path_params.model_dump()),
+            method="delete",
         )
 
-    def delete_group_user(self, group_name: str, username: str) -> Dict:
+    def delete_group_user(self, group_name: str, username: str) -> dict:
         """
         Delete a user from the RBAC group.
 
         :param group_name: RBAC group name.
         :param username: Name of user.
         """
+        path_params = PathParams(name=group_name, module=username)
         return self._make_request(
-            f"/rbac/groups/{group_name}/roles/{username}", method="delete"
+            "/rbac/groups/{name}/roles/{module}".format(**path_params.model_dump()),
+            method="delete",
         )
 
-    def get_group(self, group_name: str) -> Dict:
+    def get_group(self, group_name: str) -> dict:
         """
         Get information for an RBAC group.
 
         :param group_name: RBAC group name.
         """
-        return self._make_request(f"/rbac/groups/{group_name}")
+        path_params = PathParam(name=group_name)
+        return self._make_request(
+            "/rbac/groups/{name}".format(**path_params.model_dump())
+        )
 
-    def get_group_roles(self, group_name: str) -> Dict:
+    def get_group_roles(self, group_name: str) -> dict:
         """
         Get roles for an RBAC group.
 
         :param group_name: RBAC group name.
         """
-        return self._make_request(f"/rbac/groups/{group_name}/roles")
+        path_params = PathParam(name=group_name)
+        return self._make_request(
+            "/rbac/groups/{name}/roles".format(**path_params.model_dump())
+        )
 
-    def get_group_users(self, group_name: str) -> Dict:
+    def get_group_users(self, group_name: str) -> dict:
         """
         Get users for an RBAC group.
 
         :param group_name: RBAC group name.
         """
-        return self._make_request(f"/rbac/groups/{group_name}/users")
+        path_params = PathParam(name=group_name)
+        return self._make_request(
+            "/rbac/groups/{name}/users".format(**path_params.model_dump())
+        )
 
     def get_groups(
         self,
@@ -127,7 +161,7 @@ class Rbac(ClientBase):
         limit: int = 50,
         filter: str = None,
         order: str = "ascending",
-    ) -> Dict:
+    ) -> dict:
         """
         Get a list of RBAC groups.
 
@@ -136,18 +170,24 @@ class Rbac(ClientBase):
         :param filter: Optional. Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"admin"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
+        query_params = QueryParamsFilter(
+            offset=offset, limit=limit, order=order, filter=filter
+        )
         return self._make_request(
-            f"/rbac/groups",
-            params={"offset": offset, "limit": limit, "filter": filter, "order": order},
+            "/rbac/groups",
+            params=query_params.model_dump(exclude_none=True),
         )
 
-    def get_role(self, role_name: str) -> Dict:
+    def get_role(self, role_name: str) -> dict:
         """
         Get information for an RBAC role.
 
         :param role_name: Name of RBAC role.
         """
-        return self._make_request(f"/rbac/roles/{role_name}")
+        path_params = PathParam(name=role_name)
+        return self._make_request(
+            "/rbac/roles/{name}".format(**path_params.model_dump())
+        )
 
     def get_roles(
         self,
@@ -155,7 +195,7 @@ class Rbac(ClientBase):
         limit: int = 50,
         filter: str = None,
         order: str = "ascending",
-    ) -> Dict:
+    ) -> dict:
         """
         Get a list of RBAC roles.
 
@@ -164,9 +204,11 @@ class Rbac(ClientBase):
         :param filter: Optional. Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"admin"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
+        query_params = QueryParamsFilter(
+            offset=offset, limit=limit, order=order, filter=filter
+        )
         return self._make_request(
-            f"/rbac/roles",
-            params={"offset": offset, "limit": limit, "filter": filter, "order": order},
+            "/rbac/roles", params=query_params.model_dump(exclude_none=True)
         )
 
     def get_user_groups(
@@ -176,7 +218,7 @@ class Rbac(ClientBase):
         limit: int = 50,
         filter: str = None,
         order: str = "ascending",
-    ) -> Dict:
+    ) -> dict:
         """
         Get RBAC group information for a user.
 
@@ -186,9 +228,12 @@ class Rbac(ClientBase):
         :param filter: Optional. Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"admin"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
+        query_params = QueryParamsFilter(
+            offset=offset, limit=limit, order=order, filter=filter
+        )
         return self._make_request(
             f"/rbac/users/{username}/groups",
-            params={"offset": offset, "limit": limit, "filter": filter, "order": order},
+            params=query_params.model_dump(exclude_none=True),
         )
 
     def get_user_roles(
@@ -198,7 +243,7 @@ class Rbac(ClientBase):
         limit: int = 50,
         filter: str = None,
         order: str = "ascending",
-    ) -> Dict:
+    ) -> dict:
         """
         Get RBAC role information for a user.
 
@@ -208,27 +253,35 @@ class Rbac(ClientBase):
         :param filter: Optional. Response filter function with JSON name/value pair argument as string, i.e., 'contains({"name":"admin"})' Valid filter functions - contains, equals, startswith, endswith
         :param order: Optional. Sort indication. Available values : 'ascending' (default), 'descending'.
         """
+        query_params = QueryParamsFilter(
+            offset=offset, limit=limit, order=order, filter=filter
+        )
         return self._make_request(
             f"/rbac/users/{username}/roles",
-            params={"offset": offset, "limit": limit, "filter": filter, "order": order},
+            params=query_params.model_dump(exclude_none=True),
         )
 
     def update_group(
         self,
         group_name: str,
-        roles: List[str] = None,
-        users: List[str] = None,
+        roles: list[str] = None,
+        users: list[str] = None,
         description: str = None,
-    ) -> Dict:
+    ) -> dict:
         """
         Update an RBAC group
 
         :param group_name: RBAC group name.
-        :param roles: Optional. List of roles to assign to group.
-        :param users: Optional. List of users to assign to group.
+        :param roles: Optional. list of roles to assign to group.
+        :param users: Optional. list of users to assign to group.
         :param description: Optional. Group description.
         """
-        parameters = {"description": description, "roles": roles, "users": users}
+        path_params = PathParam(name=group_name)
+        body = RbacUpdateGroupParameters(
+            description=description, roles=roles, users=users
+        )
         return self._make_request(
-            f"/rbac/groups/{group_name}", method="put", jsonbody=parameters
+            "/rbac/groups/{name}".format(**path_params.model_dump()),
+            method="put",
+            jsonbody=body.model_dump(exclude_none=True),
         )

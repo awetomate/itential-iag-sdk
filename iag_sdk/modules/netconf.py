@@ -1,6 +1,13 @@
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from iag_sdk.client_base import ClientBase
+from iag_sdk.models import (
+    NetconfGetConfigParameters,
+    NetconfGetHistoryParameters,
+    NetconfRpcParameters,
+    NetconfSetConfigParameters,
+    QueryParams,
+)
 
 
 class Netconf(ClientBase):
@@ -17,21 +24,23 @@ class Netconf(ClientBase):
         protocol: Optional[str] = "http",
         port: Optional[Union[int, str]] = 8083,
         verify: Optional[bool] = True,
-        session = None,
-        token: Optional[str] = None
+        session=None,
+        token: Optional[str] = None,
     ) -> None:
-        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
+        super().__init__(
+            host, username, password, base_url, protocol, port, verify, session, token
+        )
 
-    def execute_rpc(self, host: str, rpc: str) -> Dict:
+    def execute_rpc(self, host: str, rpc: str) -> dict:
         """
         Execute proprietary operations on a device using the NETCONF protocol.
 
         :param host: Name of device in netconf inventory to execute against.
         :param rpc: Name of RPC operation to be executed on the remote device.
         """
-        parameters = {"host": host, "rpc": rpc}
+        body = NetconfRpcParameters(host=host, rpc=rpc)
         return self._make_request(
-            "/netconf/exec_rpc/execute", method="post", jsonbody=parameters
+            "/netconf/exec_rpc/execute", method="post", jsonbody=body.model_dump()
         )
 
     def execute_get_config(
@@ -40,7 +49,7 @@ class Netconf(ClientBase):
         filter: str = None,
         lock: bool = False,
         target_datastore: str = "running",
-    ) -> Dict:
+    ) -> dict:
         """
         Retrieve configuration from a device using the NETCONF protocol
 
@@ -49,14 +58,13 @@ class Netconf(ClientBase):
         :param lock: Optional. Lock the datastore specified in 'target_datastore' (default=False).
         :param target_datastore: Optional. Name of the datastore from which to retrieve configuration data (candidate, running (default), startup).
         """
-        parameters = {
-            "filter": filter,
-            "host": host,
-            "lock": lock,
-            "target_datastore": target_datastore,
-        }
+        body = NetconfGetConfigParameters(
+            host=host, filter=filter, lock=lock, target_datastore=target_datastore
+        )
         return self._make_request(
-            "/netconf/get_config/execute", method="post", jsonbody=parameters
+            "/netconf/get_config/execute",
+            method="post",
+            jsonbody=body.model_dump(exclude_none=True),
         )
 
     def execute_set_config(
@@ -67,7 +75,7 @@ class Netconf(ClientBase):
         save_to_startup: bool = False,
         target_datastore: str = "candidate",
         validate: bool = False,
-    ) -> Dict:
+    ) -> dict:
         """
         Configure a device using the NETCONF protocol
 
@@ -78,16 +86,18 @@ class Netconf(ClientBase):
         :param target_datastore: Optional. Name of the datastore from which to retrieve configuration data (candidate (default), running, startup).
         :param validate: Optional. Validate the config updates of the datastore specified in 'target_datastore' (default=False).
         """
-        parameters = {
-            "config_content": config_content,
-            "host": host,
-            "lock": lock,
-            "save_to_startup": save_to_startup,
-            "target_datastore": target_datastore,
-            "validate": validate,
-        }
+        body = NetconfSetConfigParameters(
+            host=host,
+            config_content=config_content,
+            lock=lock,
+            save_to_startup=save_to_startup,
+            target_datastore=target_datastore,
+            validate=validate,
+        )
         return self._make_request(
-            "/netconf/set_config/execute", method="post", jsonbody=parameters
+            "/netconf/set_config/execute",
+            method="post",
+            jsonbody=body.model_dump(exclude_none=True, by_alias=True),
         )
 
     def get_history(
@@ -96,7 +106,7 @@ class Netconf(ClientBase):
         offset: int = 0,
         limit: int = 10,
         order: str = "descending",
-    ) -> Dict:
+    ) -> dict:
         """
         Get execution log events for Netconf command.
         Tip: Use get_audit_log() and the audit_id returned by this call, to get the details of the execution.
@@ -106,7 +116,9 @@ class Netconf(ClientBase):
         :param limit: Optional.The number of items to return (default 10).
         :param order: Optional. Sort indication. Available values : 'ascending', 'descending' (default).
         """
+        path_params = NetconfGetHistoryParameters(netconf_command=netconf_command)
+        query_params = QueryParams(offset=offset, limit=limit, order=order)
         return self._make_request(
-            f"/netconf/{netconf_command}/history",
-            params={"offset": offset, "limit": limit, "order": order},
+            "/netconf/{netconf_command}/history".format(**path_params.model_dump()),
+            params=query_params.model_dump(),
         )

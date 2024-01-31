@@ -1,6 +1,13 @@
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from iag_sdk.client_base import ClientBase
+from iag_sdk.models import (
+    PathParam,
+    QueryParams,
+    QueryParamsDetail,
+    Schema,
+    TerraformParameters,
+)
 
 
 class Terraform(ClientBase):
@@ -17,85 +24,129 @@ class Terraform(ClientBase):
         protocol: Optional[str] = "http",
         port: Optional[Union[int, str]] = 8083,
         verify: Optional[bool] = True,
-        session = None,
-        token: Optional[str] = None
+        session=None,
+        token: Optional[str] = None,
     ) -> None:
-        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
+        super().__init__(
+            host, username, password, base_url, protocol, port, verify, session, token
+        )
 
-    def delete_schema(self, name: str) -> Dict:
+    def delete_module_schema(self, name: str) -> dict:
         """
         Remove a Terraform module schema.
 
         :param name: Name of the terraform module.
         """
-        return self._make_request(f"/terraforms/{name}/schema", method="delete")
+        path_params = PathParam(name=name)
+        return self._make_request(
+            "/terraforms/{name}/schema".format(**path_params.model_dump()),
+            method="delete",
+        )
 
-    def execute_apply(self, name: str, parameters: Dict) -> Dict:
+    def execute_terraform_apply(
+        self, name: str, args: dict, strict_args: bool = None
+    ) -> dict:
         """
         Apply the configuration of a Terraform module.
 
         :param name: Name of terraform module to apply.
-        :param parameters: Terraform apply Parameters.
+        :param args: Terraform Parameters.
+        :param strict_args: Optional. Override global strict args setting
         """
+        path_params = PathParam(name=name)
+        body = TerraformParameters(args=args, strict_args=strict_args)
         return self._make_request(
-            f"/terraforms/{name}/terraform_apply", method="post", jsonbody=parameters
+            "/terraforms/{name}/terraform_apply".format(**path_params.model_dump()),
+            method="post",
+            jsonbody=body.model_dump(exclude_none=True),
         )
 
-    def execute_destroy(self, name: str, parameters: Dict) -> Dict:
+    def execute_terraform_destroy(
+        self, name: str, args: dict, strict_args: bool = None
+    ) -> dict:
         """
         Destroy the resources of a Terraform module.
 
         :param name: Name of terraform module to destroy.
-        :param parameters: Terraform destroy Parameters.
+        :param args: Terraform Parameters.
+        :param strict_args: Optional. Override global strict args setting
         """
+        path_params = PathParam(name=name)
+        body = TerraformParameters(args=args, strict_args=strict_args)
         return self._make_request(
-            f"/terraforms/{name}/terraform_destroy", method="post", jsonbody=parameters
+            "/terraforms/{name}/terraform_destroy".format(**path_params.model_dump()),
+            method="post",
+            jsonbody=body.model_dump(exclude_none=True),
         )
 
-    def execute_init(self, name: str, parameters: Dict) -> Dict:
+    def execute_terraform_init(
+        self, name: str, args: dict, strict_args: bool = None
+    ) -> dict:
         """
         Initialize the providers of a Terraform module.
 
         :param name: Name of terraform module to init.
-        :param parameters: Terraform init Parameters.
+        :param args: Terraform Parameters.
+        :param strict_args: Optional. Override global strict args setting
         """
+        path_params = PathParam(name=name)
+        body = TerraformParameters(args=args, strict_args=strict_args)
         return self._make_request(
-            f"/terraforms/{name}/terraform_init", method="post", jsonbody=parameters
+            "/terraforms/{name}/terraform_init".format(**path_params.model_dump()),
+            method="post",
+            jsonbody=body.model_dump(exclude_none=True),
         )
 
-    def execute_plan(self, name: str, parameters: Dict) -> Dict:
+    def execute_terraform_plan(
+        self, name: str, args: dict, strict_args: bool = None
+    ) -> dict:
         """
         Plan the execution of a Terraform module.
 
         :param name: Name of terraform module to plan.
-        :param parameters: Terraform plan Parameters.
+        :param args: Terraform Parameters.
+        :param strict_args: Optional. Override global strict args setting
         """
+        path_params = PathParam(name=name)
+        body = TerraformParameters(args=args, strict_args=strict_args)
         return self._make_request(
-            f"/terraforms/{name}/terraform_plan", method="post", jsonbody=parameters
+            "/terraforms/{name}/terraform_plan".format(**path_params.model_dump()),
+            method="post",
+            jsonbody=body.model_dump(exclude_none=True),
         )
 
-    def execute_validate(self, name: str, parameters: Dict) -> Dict:
+    def execute_terraform_validate(
+        self, name: str, args: dict, strict_args: bool = None
+    ) -> dict:
         """
         Validate the configuration of a Terraform module.
 
         :param name: Name of terraform module to validate.
-        :param parameters: Terraform validate Parameters.
+        :param args: Terraform Parameters.
+        :param strict_args: Optional. Override global strict args setting
         """
+        path_params = PathParam(name=name)
+        body = TerraformParameters(args=args, strict_args=strict_args)
         return self._make_request(
-            f"/terraforms/{name}/terraform_validate", method="post", jsonbody=parameters
+            "/terraforms/{name}/terraform_validate".format(**path_params.model_dump()),
+            method="post",
+            jsonbody=body.model_dump(exclude_none=True),
         )
 
-    def get(self, name) -> Dict:
+    def get_module(self, name) -> dict:
         """
         Get information on a Terraform module.
 
         :param name: Name of the terraform module.
         """
-        return self._make_request(f"/terraforms/{name}")
+        path_params = PathParam(name=name)
+        return self._make_request(
+            "/terraforms/{name}".format(**path_params.model_dump())
+        )
 
-    def get_history(
+    def get_module_history(
         self, name: str, offset: int = 0, limit: int = 10, order: str = "descending"
-    ) -> Dict:
+    ) -> dict:
         """
         Get execution log events for a Terraform module.
         Tip: Use get_audit_log() and the audit_id returned by this call, to get the details of the execution.
@@ -105,27 +156,32 @@ class Terraform(ClientBase):
         :param limit: Optional. The number of items to return.
         :param order: Optional. Sort indication. Available values : ascending, descending (default).
         """
+        path_params = PathParam(name=name)
+        query_params = QueryParams(offset=offset, limit=limit, order=order)
         return self._make_request(
-            f"/terraforms/{name}/history",
-            params={"offset": offset, "limit": limit, "order": order},
+            "/terraforms/{name}/history".format(**path_params.model_dump()),
+            params=query_params.model_dump(),
         )
 
-    def get_schema(self, name: str) -> Dict:
+    def get_module_schema(self, name: str) -> dict:
         """
         Get the schema for a Terraform module.
 
         :param name: Name of the terraform module.
         """
-        return self._make_request(f"/terraforms/{name}/schema")
+        path_params = PathParam(name=name)
+        return self._make_request(
+            f"/terraforms/{name}/schema".format(**path_params.model_dump())
+        )
 
-    def get_all(
+    def get_modules(
         self,
         offset: int = 0,
         limit: int = 50,
         filter: str = None,
         order: str = "ascending",
         detail: str = "summary",
-    ) -> Dict:
+    ) -> dict:
         """
         Get list of Terraform modules.
 
@@ -135,30 +191,30 @@ class Terraform(ClientBase):
         :param order: Optional. Sort indication. Available values : ascending (default), descending.
         :param detail: Optional. Select detail level between 'full' (a lot of data) or 'summary' for each item.
         """
+        query_params = QueryParamsDetail(
+            offset=offset, limit=limit, filter=filter, order=order, detail=detail
+        )
         return self._make_request(
-            "/terraforms",
-            params={
-                "offset": offset,
-                "limit": limit,
-                "filter": filter,
-                "order": order,
-                "detail": detail,
-            },
+            "/terraforms", params=query_params.model_dump(exclude_none=True)
         )
 
-    def refresh(self) -> Dict:
+    def refresh(self) -> dict:
         """
         Perform Terraform discovery and update internal cache.
         """
-        return self._make_request(f"/terraforms/refresh", method="post")
+        return self._make_request("/terraforms/refresh", method="post")
 
-    def update_schema(self, name: str, config_object: Dict) -> Dict:
+    def update_module_schema(self, name: str, schema_object: dict) -> dict:
         """
         Update/Insert a Terraform schema document.
 
         :param name: Name of script.
-        :param config_object: Schema to apply to terraform module identified in path.
+        :param schema_object: Schema to apply to terraform module identified in path.
         """
+        path_params = PathParam(name=name)
+        body = Schema(**schema_object)
         return self._make_request(
-            f"/terraforms/{name}/schema", method="put", jsonbody=config_object
+            "/terraforms/{name}/schema".format(**path_params.model_dump()),
+            method="put",
+            jsonbody=body.model_dump(exclude_none=True),
         )

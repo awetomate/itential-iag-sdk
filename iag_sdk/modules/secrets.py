@@ -1,6 +1,7 @@
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from iag_sdk.client_base import ClientBase
+from iag_sdk.models import SecretAddParameters
 
 
 class Secret(ClientBase):
@@ -17,23 +18,26 @@ class Secret(ClientBase):
         protocol: Optional[str] = "http",
         port: Optional[Union[int, str]] = 8083,
         verify: Optional[bool] = True,
-        session = None,
-        token: Optional[str] = None
+        session=None,
+        token: Optional[str] = None,
     ) -> None:
-        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
+        super().__init__(
+            host, username, password, base_url, protocol, port, verify, session, token
+        )
 
-    def add(self, path: str, config_object: Dict) -> Dict:
+    def add_secret(self, path: str, secret: dict) -> dict:
         """
         Add a new Hashicorp Vault secret.
 
         :param path: Name of secret path.
-        :param config_object: Secret definition {"path": path, "secret_data": {}}
+        :param secret: Secret definition {"path": path, "secret_data": {}}
         """
+        body = SecretAddParameters(**secret)
         return self._make_request(
-            "/secrets", method="post", params={"path": path}, jsonbody=config_object
+            "/secrets", method="post", params={"path": path}, jsonbody=body.model_dump()
         )
 
-    def delete(self, path: str) -> Dict:
+    def delete_secret(self, path: str) -> dict:
         """
         Delete a Hashicorp Vault secret.
 
@@ -41,7 +45,7 @@ class Secret(ClientBase):
         """
         return self._make_request("/secrets", method="delete", params={"path": path})
 
-    def get(self, path: str) -> Dict:
+    def get_secret(self, path: str) -> dict:
         """
         Get a list of Hashicorp Vault secrets.
 
@@ -49,7 +53,7 @@ class Secret(ClientBase):
         """
         return self._make_request("/secrets", params={"path": path})
 
-    def update(self, path: str, config_object: Dict) -> Dict:
+    def update_secret(self, path: str, config_object: dict) -> dict:
         """
         Updata a Hashicorpy Vault secret.
 
