@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from iag_sdk.client_base import ClientBase
 
@@ -17,12 +17,14 @@ class Pronghorn(ClientBase):
         protocol: Optional[str] = "http",
         port: Optional[Union[int, str]] = 8083,
         verify: Optional[bool] = True,
-        session = None,
-        token: Optional[str] = None
+        session=None,
+        token: Optional[str] = None,
     ) -> None:
-        super().__init__(host, username, password, base_url, protocol, port, verify, session, token)
+        super().__init__(
+            host, username, password, base_url, protocol, port, verify, session, token
+        )
 
-    def get(self) -> Dict:
+    def get_pronghorn(self) -> dict:
         """
         Get pronghorn.json for the IAG server.
         """
