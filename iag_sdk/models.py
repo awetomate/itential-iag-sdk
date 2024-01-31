@@ -368,6 +368,7 @@ class InventoryNetconfUpdateParameters(BaseModel):
 class InventoryNetmikoAddVariables(BaseModel):
     class Config:
         extra = "forbid"
+        use_enum_values = True
 
     allow_agent: Optional[bool] = Field(None, description="Enable use of SSH key-agent.")
     allow_auto_change: Optional[bool] = Field(None, description="Allow automatic configuration changes for terminal settings. (default to False)",)
@@ -414,6 +415,7 @@ class InventoryNetmikoAddParameters(BaseModel):
 class InventoryNetmikoUpdateVariables(BaseModel):
     class Config:
         extra = "forbid"
+        use_enum_values = True
 
     allow_agent: Optional[bool] = Field(None, description="Enable use of SSH key-agent.")
     allow_auto_change: Optional[bool] = Field(None, description="Allow automatic configuration changes for terminal settings. (default to False)",)
@@ -534,6 +536,8 @@ class QueryParamsFilter(QueryParams):
 
 
 class QueryParamsDetail(QueryParamsFilter):
+    class Config:
+        use_enum_values = True
     detail: Optional[Detail] = "summary"
 
 
@@ -600,6 +604,9 @@ class NetconfGetConfigParameters(BaseModel):
 
 
 class NetconfSetConfigParameters(BaseModel):
+    class Config:
+        use_enum_values = True
+
     config_content: str = Field(..., description="The configuration data in xml string format")
     host: str = Field(..., description="Either hostname or ip address accepted", example="10.0.0.1")
     lock: Optional[bool] = Field(True, description="Lock the datastore specified in 'target_datastore'")
@@ -616,6 +623,9 @@ class NetconfGetHistoryParameters(BaseModel):
 
 
 class NetmikoConnectionOptions(BaseModel):
+    class Config:
+        use_enum_values = True
+    
     device_type: DeviceType = Field(..., example='cisco_ios')
     password: Optional[str] = Field(None, example='password')
     port: Optional[int] = Field(None, example='22')
