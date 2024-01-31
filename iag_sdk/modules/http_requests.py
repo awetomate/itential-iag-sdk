@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from iag_sdk.client_base import ClientBase
 from iag_sdk.models import HttpRequestsExecuteParameters, QueryParams
@@ -25,7 +25,7 @@ class HttpRequest(ClientBase):
             host, username, password, base_url, protocol, port, verify, session, token
         )
 
-    def execute(self, parameters: Dict) -> Dict:
+    def execute_request(self, parameters: dict) -> dict:
         """
         Send an HTTP/1.1 request to an inventory device.
 
@@ -39,9 +39,9 @@ class HttpRequest(ClientBase):
             jsonbody=body.model_dump(exclude_none=True),
         )
 
-    def get_history(
+    def get_request_history(
         self, offset: int = 0, limit: int = 10, order: str = "descending"
-    ) -> Dict:
+    ) -> dict:
         """
         Get execution log events for an HTTP request.
 
@@ -55,7 +55,7 @@ class HttpRequest(ClientBase):
             params=query_params.model_dump(),
         )
 
-    def get_schema(self) -> Dict:
+    def get_request_schema(self) -> dict:
         """
         Get the json schema for http_requests' request endpoint.
         """
