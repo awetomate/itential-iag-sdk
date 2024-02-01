@@ -4,7 +4,7 @@ import setuptools
 
 setuptools.setup(
     name="iag_sdk",
-    version="2024.1b1",
+    version="2024.1b2",
     description="Lightweight SDK to simplify the process of interacting with the Itential Automation Gateway API.",
     long_description=pathlib.Path("README.md").read_text(),
     long_description_content_type="text/markdown",
